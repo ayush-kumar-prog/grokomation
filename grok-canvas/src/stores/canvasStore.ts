@@ -18,7 +18,7 @@ const blockSizes: Record<string, { width: number; height: number }> = {
   textInput: { width: 320, height: 220 },
   imageInput: { width: 80, height: 80 },
   textCompletion: { width: 390, height: 840 },
-  phone: { width: 320, height: 580 },
+  phone: { width: 304, height: 580 },
   // Icon nodes - small size
   reasoning: { width: 80, height: 80 },
   webSearch: { width: 80, height: 80 },

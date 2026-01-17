@@ -595,19 +595,21 @@ async function executeWebSearchWorkflow(userMessage: string): Promise<WorkflowRe
 
     console.log('[WorkflowExecutor] Extracted sources:', sources);
 
-    // Generate React code to display the search results in a nice UI
-    const searchResultsCode = generateSearchResultsUI(userMessage, searchResultText, sources);
-
+    // Return the search results as structured data for the Phone to render
     return {
       success: true,
-      contentType: 'code',
-      content: searchResultsCode,
+      contentType: 'webSearch',
+      content: JSON.stringify({
+        query: userMessage,
+        answer: searchResultText,
+        sources,
+      }),
     };
   } catch (error) {
     console.error('[WorkflowExecutor] Web search error:', error);
     return {
       success: false,
-      contentType: 'code',
+      contentType: 'webSearch',
       content: '',
       error: error instanceof Error ? error.message : 'Unknown error',
     };
@@ -615,248 +617,59 @@ async function executeWebSearchWorkflow(userMessage: string): Promise<WorkflowRe
 }
 
 /**
- * Generate React.createElement code for displaying search results
+ * Execute a deep research/reasoning workflow
+ * Chat message → Reasoning API with high effort → Return structured analysis for Phone
  */
-function generateSearchResultsUI(
-  query: string,
-  resultText: string,
-  sources: { title: string; url: string }[]
-): string {
-  // Escape strings for JavaScript
-  const escapeJS = (str: string) => str
-    .replace(/\\/g, '\\\\')
-    .replace(/'/g, "\\'")
-    .replace(/"/g, '\\"')
-    .replace(/\n/g, '\\n')
-    .replace(/\r/g, '\\r');
+async function executeReasoningWorkflow(userMessage: string): Promise<WorkflowResult> {
+  try {
+    console.log('[WorkflowExecutor] Starting deep research for:', userMessage);
 
-  const escapedQuery = escapeJS(query);
-  const escapedResult = escapeJS(resultText);
-  const sourcesJSON = JSON.stringify(sources.map(s => ({
-    title: s.title.substring(0, 50) + (s.title.length > 50 ? '...' : ''),
-    url: s.url,
-  })));
+    // Call the Grok reasoning API with high effort
+    const response = await grokApi.reasoning(userMessage, {
+      reasoningEffort: 'high',
+      systemPrompt: `You are a deep research analyst. Provide thorough, well-reasoned analysis with:
+1. Clear structure with sections
+2. Key insights and findings
+3. Supporting evidence and reasoning
+4. Conclusions and recommendations
 
-  return `(function() {
-  var query = "${escapedQuery}";
-  var resultText = "${escapedResult}";
-  var sources = ${sourcesJSON};
+Format your response with markdown headers (##, ###) for sections, bullet points for lists, and **bold** for emphasis.`,
+    });
 
-  return React.createElement('div', {
-    style: {
-      height: '100%',
-      background: '#f8fafc',
-      display: 'flex',
-      flexDirection: 'column',
-      overflow: 'hidden'
+    console.log('[WorkflowExecutor] Reasoning response received');
+
+    if (!response.choices || response.choices.length === 0) {
+      return {
+        success: false,
+        contentType: 'reasoning',
+        content: '',
+        error: 'No response from reasoning model',
+      };
     }
-  },
-    // Header
-    React.createElement('div', {
-      style: {
-        background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-        padding: '16px 20px',
-        flexShrink: 0
-      }
-    },
-      React.createElement('div', {
-        style: {
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          marginBottom: '8px'
-        }
-      },
-        React.createElement('div', {
-          style: {
-            width: '28px',
-            height: '28px',
-            borderRadius: '8px',
-            background: 'rgba(255,255,255,0.2)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '14px'
-          }
-        }, '🔍'),
-        React.createElement('span', {
-          style: {
-            color: '#ffffff',
-            fontSize: '13px',
-            fontWeight: '500',
-            opacity: 0.9
-          }
-        }, 'Web Search')
-      ),
-      React.createElement('p', {
-        style: {
-          color: '#ffffff',
-          fontSize: '15px',
-          fontWeight: '600',
-          margin: 0,
-          lineHeight: 1.4
-        }
-      }, query)
-    ),
 
-    // Results Content
-    React.createElement('div', {
-      style: {
-        flex: 1,
-        overflowY: 'auto',
-        padding: '16px 20px'
-      }
-    },
-      // Answer Section
-      React.createElement('div', {
-        style: {
-          background: '#ffffff',
-          borderRadius: '14px',
-          padding: '16px',
-          marginBottom: '16px',
-          boxShadow: '0 2px 12px rgba(0,0,0,0.06)'
-        }
-      },
-        React.createElement('div', {
-          style: {
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            marginBottom: '12px'
-          }
-        },
-          React.createElement('div', {
-            style: {
-              width: '6px',
-              height: '6px',
-              borderRadius: '50%',
-              background: '#10b981'
-            }
-          }),
-          React.createElement('span', {
-            style: {
-              color: '#0f172a',
-              fontSize: '14px',
-              fontWeight: '600'
-            }
-          }, 'Answer')
-        ),
-        React.createElement('p', {
-          style: {
-            color: '#334155',
-            fontSize: '14px',
-            lineHeight: '1.6',
-            margin: 0,
-            whiteSpace: 'pre-wrap'
-          }
-        }, resultText)
-      ),
+    const answer = response.choices[0].message.content;
+    const reasoningTokens = response.usage?.reasoning_tokens || 0;
 
-      // Sources Section
-      sources.length > 0 ? React.createElement('div', null,
-        React.createElement('div', {
-          style: {
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            marginBottom: '12px'
-          }
-        },
-          React.createElement('span', {
-            style: {
-              color: '#64748b',
-              fontSize: '13px',
-              fontWeight: '600'
-            }
-          }, 'Sources'),
-          React.createElement('div', {
-            style: {
-              background: '#e2e8f0',
-              borderRadius: '10px',
-              padding: '2px 8px',
-              fontSize: '11px',
-              color: '#64748b',
-              fontWeight: '500'
-            }
-          }, sources.length)
-        ),
-        sources.map(function(source, index) {
-          return React.createElement('div', {
-            key: index,
-            style: {
-              background: '#ffffff',
-              borderRadius: '10px',
-              padding: '12px 14px',
-              marginBottom: '8px',
-              border: '1px solid #e2e8f0',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px'
-            }
-          },
-            React.createElement('div', {
-              style: {
-                width: '32px',
-                height: '32px',
-                borderRadius: '8px',
-                background: '#f1f5f9',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '14px',
-                flexShrink: 0
-              }
-            }, '📄'),
-            React.createElement('div', {
-              style: { flex: 1, minWidth: 0 }
-            },
-              React.createElement('p', {
-                style: {
-                  color: '#0f172a',
-                  fontSize: '13px',
-                  fontWeight: '500',
-                  margin: 0,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap'
-                }
-              }, source.title),
-              React.createElement('p', {
-                style: {
-                  color: '#64748b',
-                  fontSize: '11px',
-                  margin: '4px 0 0 0',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap'
-                }
-              }, source.url.replace(/^https?:\\/\\//, '').split('/')[0])
-            )
-          );
-        })
-      ) : null
-    ),
-
-    // Footer
-    React.createElement('div', {
-      style: {
-        padding: '12px 20px',
-        borderTop: '1px solid #e2e8f0',
-        background: '#ffffff',
-        flexShrink: 0
-      }
-    },
-      React.createElement('p', {
-        style: {
-          color: '#94a3b8',
-          fontSize: '11px',
-          textAlign: 'center',
-          margin: 0
-        }
-      }, 'Powered by Grok Web Search')
-    )
-  );
-})()`;
+    // Return structured data for the Phone to render
+    return {
+      success: true,
+      contentType: 'reasoning',
+      content: JSON.stringify({
+        query: userMessage,
+        answer,
+        reasoningTokens,
+        model: response.model,
+      }),
+    };
+  } catch (error) {
+    console.error('[WorkflowExecutor] Reasoning error:', error);
+    return {
+      success: false,
+      contentType: 'reasoning',
+      content: '',
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
 }
 
 /**
@@ -889,6 +702,11 @@ export async function executeWorkflow(
       // Web search workflow
       console.log('[executeWorkflow] Routing to WEB SEARCH workflow');
       return executeWebSearchWorkflow(userMessage);
+
+    case 'reasoning':
+      // Deep research/reasoning workflow
+      console.log('[executeWorkflow] Routing to REASONING workflow');
+      return executeReasoningWorkflow(userMessage);
 
     default:
       console.log('[executeWorkflow] Unknown processingType, returning default');

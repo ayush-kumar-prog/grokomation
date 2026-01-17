@@ -62,9 +62,12 @@ const TextCompletionNode: React.FC<NodeProps> = ({ id, data }) => {
         console.log('[TextCompletionNode] Workflow detected, executing...', workflowInfo);
 
         // Determine content type based on processing node
-        // webSearch returns 'code' since it renders a React UI with search results
-        const contentType = (workflowInfo.processingType === 'codeExecution' || workflowInfo.processingType === 'webSearch')
+        const contentType = workflowInfo.processingType === 'codeExecution'
           ? 'code'
+          : workflowInfo.processingType === 'webSearch'
+          ? 'webSearch'
+          : workflowInfo.processingType === 'reasoning'
+          ? 'reasoning'
           : 'image';
         console.log('[TextCompletionNode] Content type:', contentType);
 
@@ -90,6 +93,8 @@ const TextCompletionNode: React.FC<NodeProps> = ({ id, data }) => {
         const getSuccessMessage = () => {
           if (workflowInfo.processingType === 'webSearch') {
             return '✓ Web search complete! Results shown on phone.';
+          } else if (workflowInfo.processingType === 'reasoning') {
+            return '✓ Deep research complete! Analysis shown on phone.';
           } else if (result.contentType === 'code') {
             return '✓ Generated app and sent to phone!';
           } else {
@@ -184,7 +189,8 @@ const TextCompletionNode: React.FC<NodeProps> = ({ id, data }) => {
                     <span className="text-emerald-400 text-xs font-medium">
                       {workflowInfo.processingType === 'codeExecution' ? 'Code Generation' :
                        (workflowInfo.processingType === 'vision' || workflowInfo.processingType === 'imageInput') ? 'Image Generation' :
-                       workflowInfo.processingType === 'webSearch' ? 'Web Search' : 'Workflow'} Mode
+                       workflowInfo.processingType === 'webSearch' ? 'Web Search' :
+                       workflowInfo.processingType === 'reasoning' ? 'Deep Research' : 'Workflow'} Mode
                     </span>
                   </div>
                   <p className="text-gray-500 text-sm text-center px-4">
@@ -194,6 +200,8 @@ const TextCompletionNode: React.FC<NodeProps> = ({ id, data }) => {
                       ? 'Describe an image and it will be created!'
                       : workflowInfo.processingType === 'webSearch'
                       ? 'Ask any question to search the web!'
+                      : workflowInfo.processingType === 'reasoning'
+                      ? 'Ask complex questions for deep analysis!'
                       : 'Send a message to execute the workflow'}
                   </p>
                 </>
@@ -311,6 +319,8 @@ const TextCompletionNode: React.FC<NodeProps> = ({ id, data }) => {
                     ? 'Describe an image to create...'
                     : workflowInfo.processingType === 'webSearch'
                     ? 'Search the web for anything...'
+                    : workflowInfo.processingType === 'reasoning'
+                    ? 'Ask a complex question to analyze...'
                     : 'Type your message...'
                   : 'Type your message...'
               }
