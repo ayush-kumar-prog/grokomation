@@ -42,49 +42,57 @@ export interface TextCompletionBlock extends BaseNode {
   maxTokens: number;
 }
 
+// Icon-only capability block
 export interface VisionBlock extends BaseNode {
   type: 'vision';
-  model: 'grok-4' | 'grok-4-fast';
-  prompt: string;
-  detail: 'auto' | 'low' | 'high';
 }
 
+// Icon-only reasoning block
 export interface ReasoningBlock extends BaseNode {
   type: 'reasoning';
-  model: 'grok-3-mini';
-  reasoningEffort: 'low' | 'high';
-  systemPrompt: string;
 }
 
 // ============ TOOL BLOCKS ============
 
+// Icon-only web search block
 export interface WebSearchBlock extends BaseNode {
   type: 'webSearch';
-  model: 'grok-4-1-fast';
-  allowedDomains: string[];
-  excludedDomains: string[];
-  enableImageUnderstanding: boolean;
 }
 
-export interface XSearchBlock extends BaseNode {
-  type: 'xSearch';
-  model: 'grok-4-1-fast';
-  query: string;
-  messages: { role: 'user' | 'assistant'; content: string }[];
+// Icon-only X fetch block
+export interface XFetchBlock extends BaseNode {
+  type: 'xFetch';
 }
 
+// Icon-only capability block
 export interface CodeExecutionBlock extends BaseNode {
   type: 'codeExecution';
-  model: 'grok-4-1-fast';
-  description: string;
 }
 
 // ============ OUTPUT BLOCKS ============
 
+// Icon-only output block
 export interface OutputBlock extends BaseNode {
   type: 'output';
-  label: string;
-  outputValue: string;
+}
+
+// ============ PHONE BLOCK ============
+
+export type PhoneContentType = 'default' | 'code' | 'image';
+
+export interface PhoneBlock extends BaseNode {
+  type: 'phone';
+  title: string;
+  isLoading: boolean;
+  showQR: boolean;
+  inspectorMode: boolean;
+  currentVersion: number;
+  totalVersions: number;
+  scrollPosition: number;
+  // Dynamic content from workflow execution
+  contentType: PhoneContentType;
+  content: string; // React code string or image URL
+  error?: string; // Error message if execution failed
 }
 
 // Union type for all blocks
@@ -95,9 +103,10 @@ export type GrokBlock =
   | VisionBlock
   | ReasoningBlock
   | WebSearchBlock
-  | XSearchBlock
+  | XFetchBlock
   | CodeExecutionBlock
-  | OutputBlock;
+  | OutputBlock
+  | PhoneBlock;
 
 // Tool types for toolbar
 export type ToolType =
@@ -108,9 +117,10 @@ export type ToolType =
   | 'vision'
   | 'reasoning'
   | 'webSearch'
-  | 'xSearch'
+  | 'xFetch'
   | 'codeExecution'
-  | 'output';
+  | 'output'
+  | 'phone';
 
 // Connection between nodes
 export interface Connection {

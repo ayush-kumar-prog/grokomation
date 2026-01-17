@@ -195,3 +195,43 @@ input[type="date"] {
 .animate-pulse-soft {
   animation: pulse-soft 2s ease-in-out infinite;
 }
+
+/* Phone frame with notch and home indicator */
+.phone-frame {
+  position: relative;
+}
+
+/* Phone notch (top speaker/camera area) */
+.phone-frame::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 4px;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 0 0 4px 4px;
+  z-index: 10;
+}
+
+/* Home indicator (bottom bar) */
+.phone-frame::after {
+  content: '';
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50px;
+  height: 3px;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 2px;
+  z-index: 10;
+}
+
+/* Phone screen styling */
+.phone-screen {
+  position: relative;
+  background: #f5f5f5;
+  overflow: hidden;
+}

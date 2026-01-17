@@ -7,14 +7,8 @@ import type {
   GrokBlock,
   Connection,
   TextInputBlock,
-  ImageInputBlock,
   TextCompletionBlock,
-  VisionBlock,
-  ReasoningBlock,
-  WebSearchBlock,
-  XSearchBlock,
-  CodeExecutionBlock,
-  OutputBlock,
+  PhoneBlock,
 } from '../types/canvas';
 
 const generateId = () => nanoid(10);
@@ -22,14 +16,15 @@ const generateId = () => nanoid(10);
 // Default sizes for different block types
 const blockSizes: Record<string, { width: number; height: number }> = {
   textInput: { width: 320, height: 220 },
-  imageInput: { width: 320, height: 280 },
-  textCompletion: { width: 340, height: 340 },
-  vision: { width: 340, height: 320 },
-  reasoning: { width: 340, height: 340 },
-  webSearch: { width: 340, height: 380 },
-  xSearch: { width: 380, height: 420 },
-  codeExecution: { width: 340, height: 280 },
-  output: { width: 340, height: 280 },
+  imageInput: { width: 80, height: 80 },
+  textCompletion: { width: 390, height: 840 },
+  phone: { width: 320, height: 580 },
+  // Icon nodes - small size
+  reasoning: { width: 80, height: 80 },
+  webSearch: { width: 80, height: 80 },
+  xFetch: { width: 80, height: 80 },
+  vision: { width: 80, height: 80 },
+  codeExecution: { width: 80, height: 80 },
 };
 
 interface CanvasStore extends CanvasState {
@@ -90,10 +85,7 @@ export const useCanvasStore = create<CanvasStore>((set) => ({
         newBlock = {
           ...baseBlock,
           type: 'imageInput',
-          label: 'Image Input',
-          imageUrl: '',
-          detail: 'auto',
-        } as ImageInputBlock;
+        } as GrokBlock;
         break;
 
       case 'textCompletion':
@@ -111,59 +103,58 @@ export const useCanvasStore = create<CanvasStore>((set) => ({
         newBlock = {
           ...baseBlock,
           type: 'vision',
-          model: 'grok-4',
-          prompt: 'Describe this image',
-          detail: 'auto',
-        } as VisionBlock;
+        } as GrokBlock;
         break;
 
       case 'reasoning':
         newBlock = {
           ...baseBlock,
           type: 'reasoning',
-          model: 'grok-3-mini',
-          reasoningEffort: 'high',
-          systemPrompt: 'You are a highly intelligent AI assistant.',
-        } as ReasoningBlock;
+        } as GrokBlock;
         break;
 
       case 'webSearch':
         newBlock = {
           ...baseBlock,
           type: 'webSearch',
-          model: 'grok-4-1-fast',
-          allowedDomains: [],
-          excludedDomains: [],
-          enableImageUnderstanding: false,
-        } as WebSearchBlock;
+        } as GrokBlock;
         break;
 
-      case 'xSearch':
+      case 'xFetch':
         newBlock = {
           ...baseBlock,
-          type: 'xSearch',
-          model: 'grok-4-1-fast',
-          query: '',
-          messages: [],
-        } as XSearchBlock;
+          type: 'xFetch',
+        } as GrokBlock;
         break;
 
       case 'codeExecution':
         newBlock = {
           ...baseBlock,
           type: 'codeExecution',
-          model: 'grok-4-1-fast',
-          description: 'Execute Python code',
-        } as CodeExecutionBlock;
+        } as GrokBlock;
         break;
 
       case 'output':
         newBlock = {
           ...baseBlock,
           type: 'output',
-          label: 'Output',
-          outputValue: '',
-        } as OutputBlock;
+        } as GrokBlock;
+        break;
+
+      case 'phone':
+        newBlock = {
+          ...baseBlock,
+          type: 'phone',
+          title: 'My App',
+          isLoading: false,
+          showQR: false,
+          inspectorMode: false,
+          currentVersion: 1,
+          totalVersions: 1,
+          scrollPosition: 0,
+          contentType: 'default',
+          content: '',
+        } as PhoneBlock;
         break;
 
       default:
