@@ -1,9 +1,7 @@
 import React, { memo, useState, useCallback, useEffect } from 'react';
-import { type NodeProps } from '@xyflow/react';
-import { Search, Play, Copy, Check, Loader2, Bell, Zap } from 'lucide-react';
-import BaseNode from './BaseNode';
+import { type NodeProps, Handle, Position } from '@xyflow/react';
+import { Search, Play, Loader2, X, GripHorizontal, Bell, Zap } from 'lucide-react';
 import { useCanvasStore } from '../../stores/canvasStore';
-import { cn } from '@/lib/utils';
 import type { XFetchBlock, XDMBlock } from '../../types/canvas';
 import { searchTweets } from '../../api/twitter';
 
@@ -16,6 +14,7 @@ const XLogo: React.FC<{ size?: number; className?: string }> = ({ size = 18, cla
 const XFetchNode: React.FC<NodeProps> = ({ id, data }) => {
   const nodeData = data as unknown as XFetchBlock;
   const updateBlock = useCanvasStore((s) => s.updateBlock);
+  const removeBlock = useCanvasStore((s) => s.removeBlock);
   const setNodeOutput = useCanvasStore((s) => s.setNodeOutput);
   const setNodeExecutionStatus = useCanvasStore((s) => s.setNodeExecutionStatus);
   const nodeExecutionStates = useCanvasStore((s) => s.nodeExecutionStates);
@@ -24,17 +23,14 @@ const XFetchNode: React.FC<NodeProps> = ({ id, data }) => {
   const blocks = useCanvasStore((s) => s.blocks);
   const connections = useCanvasStore((s) => s.connections);
 
-  const [copied, setCopied] = useState(false);
   const [query, setQuery] = useState(nodeData.query || '');
 
   const status = nodeExecutionStates[id]?.status || 'idle';
   const output = nodeOutputs[id] as any;
 
-  // Get query from connected input or local state
   const connectedInput = getInputFromConnections(id);
   const effectiveQuery = typeof connectedInput === 'string' ? connectedInput : query;
 
-  // Find connected phone node
   const getConnectedPhone = useCallback(() => {
     const outgoingConnections = connections.filter((c) => c.source === id);
     for (const conn of outgoingConnections) {
@@ -46,7 +42,6 @@ const XFetchNode: React.FC<NodeProps> = ({ id, data }) => {
     return null;
   }, [connections, blocks, id]);
 
-  // Find connected XDM node (for chained workflow)
   const getConnectedXDM = useCallback(() => {
     const outgoingConnections = connections.filter((c) => c.source === id);
     for (const conn of outgoingConnections) {
@@ -60,26 +55,19 @@ const XFetchNode: React.FC<NodeProps> = ({ id, data }) => {
 
   const connectedXDM = getConnectedXDM();
 
-  // Track if we've already sent this output to prevent loops
   const [lastSentOutputId, setLastSentOutputId] = useState<string | null>(null);
 
-  // Update connected phone when output changes
   useEffect(() => {
     try {
       if (output && output.success && output.tweets && Array.isArray(output.tweets)) {
-        // Create a unique ID for this output to prevent duplicate sends
         const outputId = `${output.query}-${output.count}-${output.metadata?.searchedAt || ''}`;
 
-        // Skip if we already sent this exact output
         if (outputId === lastSentOutputId) {
           return;
         }
 
         const phoneId = getConnectedPhone();
         if (phoneId) {
-          console.log('[XFetchNode] Sending results to phone:', phoneId);
-
-          // Format data for phone display with defensive defaults
           const phoneData = {
             query: output.query || '',
             count: output.count || 0,
@@ -95,8 +83,6 @@ const XFetchNode: React.FC<NodeProps> = ({ id, data }) => {
             })),
             searchedAt: output.metadata?.searchedAt || new Date().toISOString(),
           };
-
-          console.log('[XFetchNode] Phone data:', phoneData);
 
           updateBlock(phoneId, {
             contentType: 'xFetch',
@@ -118,7 +104,6 @@ const XFetchNode: React.FC<NodeProps> = ({ id, data }) => {
 
     setNodeExecutionStatus(id, 'running');
 
-    // Set connected phone to loading state
     const phoneId = getConnectedPhone();
     if (phoneId) {
       updateBlock(phoneId, {
@@ -137,7 +122,6 @@ const XFetchNode: React.FC<NodeProps> = ({ id, data }) => {
         setNodeOutput(id, result);
       } else {
         setNodeExecutionStatus(id, 'error', result.error);
-        // Update phone with error
         if (phoneId) {
           updateBlock(phoneId, {
             isLoading: false,
@@ -148,7 +132,6 @@ const XFetchNode: React.FC<NodeProps> = ({ id, data }) => {
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Search failed';
       setNodeExecutionStatus(id, 'error', errorMsg);
-      // Update phone with error
       if (phoneId) {
         updateBlock(phoneId, {
           isLoading: false,
@@ -158,85 +141,188 @@ const XFetchNode: React.FC<NodeProps> = ({ id, data }) => {
     }
   }, [effectiveQuery, nodeData.count, id, setNodeExecutionStatus, setNodeOutput, getConnectedPhone, updateBlock]);
 
-  const handleCopy = useCallback(() => {
-    if (output) {
-      navigator.clipboard.writeText(JSON.stringify(output, null, 2));
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  }, [output]);
-
   const handleQueryChange = useCallback((value: string) => {
     setQuery(value);
     updateBlock(id, { query: value });
   }, [id, updateBlock]);
 
-  const getStatusText = () => {
-    switch (status) {
-      case 'running': return 'SEARCHING X...';
-      case 'success': return `FOUND ${output?.count || 0} TWEETS`;
-      case 'error': return nodeExecutionStates[id]?.error || 'ERROR';
-      default: return effectiveQuery ? 'READY TO SEARCH' : 'ENTER A SEARCH QUERY';
-    }
-  };
-
-  const getStatusBg = () => {
-    switch (status) {
-      case 'running': return 'bg-blue-500';
-      case 'success': return 'bg-green-500';
-      case 'error': return 'bg-red-500';
-      default: return effectiveQuery ? 'bg-green-500' : 'bg-gray-400';
-    }
-  };
-
   return (
-    <BaseNode
-      id={id}
-      title="X SEARCH"
-      icon={<XLogo size={18} />}
-      color="#000000"
-      width={nodeData.size?.width || 380}
+    <div
+      className="relative"
+      style={{ width: nodeData.size?.width || 320 }}
     >
-      <div className="space-y-5 p-2">
-        {/* Status */}
-        <div className="flex items-center gap-4 p-4 border-2 border-black bg-gray-100">
-          <div className={cn('w-3 h-3', getStatusBg())} />
-          <span className="text-xs font-bold uppercase tracking-wide text-black">
-            {getStatusText()}
-          </span>
-        </div>
+      {/* Handles */}
+      <Handle
+        type="target"
+        position={Position.Top}
+        id="top"
+        style={{
+          width: '12px',
+          height: '12px',
+          background: '#ffffff',
+          border: '2px solid #000000',
+          borderRadius: 0,
+          top: -6,
+        }}
+      />
+      <Handle
+        type="target"
+        position={Position.Left}
+        id="left"
+        style={{
+          width: '12px',
+          height: '12px',
+          background: '#ffffff',
+          border: '2px solid #000000',
+          borderRadius: 0,
+          left: -6,
+        }}
+      />
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="right"
+        style={{
+          width: '12px',
+          height: '12px',
+          background: '#ffffff',
+          border: '2px solid #000000',
+          borderRadius: 0,
+          right: -6,
+        }}
+      />
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        id="bottom"
+        style={{
+          width: '12px',
+          height: '12px',
+          background: '#ffffff',
+          border: '2px solid #000000',
+          borderRadius: 0,
+          bottom: -6,
+        }}
+      />
 
-        {/* Search Query Input */}
-        <div>
-          <label className="block text-xs font-bold uppercase tracking-wide text-black mb-3">
-            SEARCH QUERY
-          </label>
-          <div className="relative">
-            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
-            <input
-              type="text"
-              value={connectedInput ? String(connectedInput) : query}
-              onChange={(e) => handleQueryChange(e.target.value)}
-              disabled={!!connectedInput}
-              placeholder="#tesla OR @elonmusk"
-              className={cn(
-                'w-full border-2 border-black pl-12 pr-4 py-4 text-sm text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black nodrag bg-white',
-                connectedInput && 'bg-gray-100'
-              )}
-            />
+      {/* Main Container */}
+      <div style={{ background: '#ffffff', border: '3px solid #000000' }}>
+        {/* Header */}
+        <div
+          style={{
+            background: '#000000',
+            padding: '12px 16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <XLogo size={16} className="text-white" />
+            <span style={{ color: '#ffffff', fontSize: '13px', fontWeight: 700, letterSpacing: '0.5px' }}>
+              X SEARCH
+            </span>
           </div>
-          {connectedInput && (
-            <p className="text-xs font-bold text-blue-600 mt-2 uppercase">USING CONNECTED INPUT</p>
-          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0' }}>
+            <div
+              className="drag-handle"
+              style={{
+                cursor: 'grab',
+                padding: '6px',
+                color: '#ffffff',
+              }}
+            >
+              <GripHorizontal size={14} />
+            </div>
+            <button
+              onClick={() => removeBlock(id)}
+              style={{
+                padding: '6px',
+                color: '#ffffff',
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+              }}
+            >
+              <X size={14} />
+            </button>
+          </div>
         </div>
 
-        {/* Results Count */}
-        <div>
-          <label className="flex items-center justify-between text-xs font-bold uppercase tracking-wide text-black mb-3">
-            RESULTS COUNT
-            <span className="text-black text-sm">{nodeData.count || 10}</span>
-          </label>
-          <div className="border-2 border-black p-5 bg-gray-100">
+        {/* Content */}
+        <div style={{ padding: '16px' }}>
+          {/* Search Input */}
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{
+              display: 'block',
+              fontSize: '10px',
+              fontWeight: 700,
+              color: '#000000',
+              marginBottom: '8px',
+              letterSpacing: '0.5px',
+            }}>
+              QUERY
+            </label>
+            <div style={{ position: 'relative' }}>
+              <Search
+                size={14}
+                style={{
+                  position: 'absolute',
+                  left: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: '#999999',
+                }}
+              />
+              <input
+                type="text"
+                value={connectedInput ? String(connectedInput) : query}
+                onChange={(e) => handleQueryChange(e.target.value)}
+                disabled={!!connectedInput}
+                placeholder="#tesla OR @elonmusk"
+                className="nodrag"
+                style={{
+                  width: '100%',
+                  border: '2px solid #000000',
+                  padding: '10px 12px 10px 36px',
+                  fontSize: '12px',
+                  color: '#000000',
+                  background: connectedInput ? '#f5f5f5' : '#ffffff',
+                  outline: 'none',
+                }}
+              />
+            </div>
+            {connectedInput !== null && connectedInput !== undefined && (
+              <p style={{ fontSize: '10px', fontWeight: 600, color: '#666666', marginTop: '6px' }}>
+                USING CONNECTED INPUT
+              </p>
+            )}
+          </div>
+
+          {/* Results Count */}
+          <div style={{ marginBottom: '16px' }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '8px',
+            }}>
+              <label style={{
+                fontSize: '10px',
+                fontWeight: 700,
+                color: '#000000',
+                letterSpacing: '0.5px',
+              }}>
+                COUNT
+              </label>
+              <span style={{
+                fontSize: '12px',
+                fontWeight: 700,
+                color: '#000000',
+              }}>
+                {nodeData.count || 10}
+              </span>
+            </div>
             <input
               type="range"
               min="10"
@@ -244,166 +330,231 @@ const XFetchNode: React.FC<NodeProps> = ({ id, data }) => {
               step="10"
               value={nodeData.count || 10}
               onChange={(e) => updateBlock(id, { count: parseInt(e.target.value) })}
-              className="w-full h-2 appearance-none cursor-pointer bg-black [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-black nodrag"
+              className="nodrag"
+              style={{
+                width: '100%',
+                height: '4px',
+                background: '#000000',
+                cursor: 'pointer',
+                WebkitAppearance: 'none',
+                appearance: 'none',
+              }}
             />
           </div>
-        </div>
 
-        {/* Monitor Mode Toggle */}
-        {connectedXDM && (
-          <div className="border-2 border-black p-4 bg-yellow-50">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <Bell size={16} className="text-black" />
-                <label className="text-xs font-bold uppercase tracking-wide text-black">
-                  MONITOR MODE
-                </label>
-              </div>
-              <button
-                onClick={() => updateBlock(id, { monitorMode: !nodeData.monitorMode })}
-                className={cn(
-                  'w-12 h-6 rounded-none border-2 border-black transition-colors relative',
-                  nodeData.monitorMode ? 'bg-green-500' : 'bg-gray-300'
-                )}
-              >
-                <div
-                  className={cn(
-                    'w-4 h-4 bg-white border border-black absolute top-0.5 transition-all',
-                    nodeData.monitorMode ? 'left-6' : 'left-0.5'
-                  )}
-                />
-              </button>
-            </div>
-
-            {nodeData.monitorMode && (
-              <>
-                {/* Threshold Setting */}
-                <div className="mb-3">
-                  <label className="flex items-center justify-between text-xs font-bold uppercase tracking-wide text-black mb-2">
-                    ALERT THRESHOLD
-                    <span className="text-black">{nodeData.threshold || 300} TWEETS/HR</span>
-                  </label>
-                  <input
-                    type="range"
-                    min="100"
-                    max="1000"
-                    step="50"
-                    value={nodeData.threshold || 300}
-                    onChange={(e) => updateBlock(id, { threshold: parseInt(e.target.value) })}
-                    className="w-full h-2 appearance-none cursor-pointer bg-black [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-yellow-400 [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-black nodrag"
+          {/* Monitor Mode - Only show when connected to XDM */}
+          {connectedXDM && (
+            <div style={{
+              marginBottom: '16px',
+              border: '2px solid #000000',
+              background: '#fffbeb',
+            }}>
+              <div style={{
+                padding: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Bell size={14} style={{ color: '#000000' }} />
+                  <span style={{ fontSize: '10px', fontWeight: 700, color: '#000000', letterSpacing: '0.5px' }}>
+                    MONITOR MODE
+                  </span>
+                </div>
+                <button
+                  onClick={() => updateBlock(id, { monitorMode: !nodeData.monitorMode })}
+                  className="nodrag"
+                  style={{
+                    width: '40px',
+                    height: '20px',
+                    border: '2px solid #000000',
+                    background: nodeData.monitorMode ? '#22c55e' : '#d1d5db',
+                    position: 'relative',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <div
+                    style={{
+                      width: '14px',
+                      height: '14px',
+                      background: '#ffffff',
+                      border: '1px solid #000000',
+                      position: 'absolute',
+                      top: '1px',
+                      left: nodeData.monitorMode ? '22px' : '1px',
+                      transition: 'left 0.15s ease',
+                    }}
                   />
-                </div>
+                </button>
+              </div>
 
-                {/* Simulate Threshold Hit Toggle */}
-                <div className="flex items-center justify-between p-3 bg-white border-2 border-dashed border-black">
-                  <div className="flex items-center gap-2">
-                    <Zap size={14} className="text-yellow-600" />
-                    <span className="text-xs font-bold uppercase text-black">
-                      SIMULATE ALERT (DEMO)
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => updateBlock(id, { simulateThresholdHit: !nodeData.simulateThresholdHit })}
-                    className={cn(
-                      'w-10 h-5 rounded-none border-2 border-black transition-colors relative',
-                      nodeData.simulateThresholdHit ? 'bg-yellow-400' : 'bg-gray-200'
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        'w-3 h-3 bg-white border border-black absolute top-0.5 transition-all',
-                        nodeData.simulateThresholdHit ? 'left-5' : 'left-0.5'
-                      )}
+              {nodeData.monitorMode && (
+                <div style={{ padding: '0 12px 12px 12px' }}>
+                  {/* Threshold Setting */}
+                  <div style={{ marginBottom: '12px' }}>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      marginBottom: '6px',
+                    }}>
+                      <label style={{
+                        fontSize: '9px',
+                        fontWeight: 700,
+                        color: '#000000',
+                        letterSpacing: '0.5px',
+                      }}>
+                        ALERT THRESHOLD
+                      </label>
+                      <span style={{ fontSize: '10px', fontWeight: 700, color: '#000000' }}>
+                        {nodeData.threshold || 300}/HR
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min="100"
+                      max="1000"
+                      step="50"
+                      value={nodeData.threshold || 300}
+                      onChange={(e) => updateBlock(id, { threshold: parseInt(e.target.value) })}
+                      className="nodrag"
+                      style={{
+                        width: '100%',
+                        height: '4px',
+                        background: '#000000',
+                        cursor: 'pointer',
+                        WebkitAppearance: 'none',
+                        appearance: 'none',
+                      }}
                     />
-                  </button>
+                  </div>
+
+                  {/* Simulate Alert Toggle */}
+                  <div style={{
+                    padding: '10px',
+                    background: '#ffffff',
+                    border: '2px dashed #000000',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Zap size={12} style={{ color: '#ca8a04' }} />
+                      <span style={{ fontSize: '9px', fontWeight: 700, color: '#000000' }}>
+                        SIMULATE ALERT
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => updateBlock(id, { simulateThresholdHit: !nodeData.simulateThresholdHit })}
+                      className="nodrag"
+                      style={{
+                        width: '32px',
+                        height: '16px',
+                        border: '2px solid #000000',
+                        background: nodeData.simulateThresholdHit ? '#facc15' : '#e5e7eb',
+                        position: 'relative',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: '10px',
+                          height: '10px',
+                          background: '#ffffff',
+                          border: '1px solid #000000',
+                          position: 'absolute',
+                          top: '1px',
+                          left: nodeData.simulateThresholdHit ? '17px' : '1px',
+                          transition: 'left 0.15s ease',
+                        }}
+                      />
+                    </button>
+                  </div>
                 </div>
+              )}
+
+              <div style={{
+                padding: '8px 12px',
+                borderTop: '1px solid #e5e7eb',
+              }}>
+                <p style={{ fontSize: '9px', color: '#666666', margin: 0 }}>
+                  Connected to X DM - sends alert when threshold hit
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Execute Button */}
+          <button
+            onClick={handleExecute}
+            disabled={!effectiveQuery.trim() || status === 'running'}
+            className="nodrag"
+            style={{
+              width: '100%',
+              padding: '12px',
+              fontSize: '11px',
+              fontWeight: 700,
+              letterSpacing: '0.5px',
+              background: !effectiveQuery.trim() || status === 'running' ? '#cccccc' : '#000000',
+              color: !effectiveQuery.trim() || status === 'running' ? '#666666' : '#ffffff',
+              border: '2px solid #000000',
+              cursor: !effectiveQuery.trim() || status === 'running' ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+            }}
+          >
+            {status === 'running' ? (
+              <>
+                <Loader2 size={14} className="animate-spin" />
+                SEARCHING...
+              </>
+            ) : (
+              <>
+                <Play size={14} />
+                SEARCH
               </>
             )}
+          </button>
 
-            <p className="text-xs text-gray-600 mt-3">
-              Connected to X DM node - will send alert when threshold is hit
-            </p>
-          </div>
-        )}
-
-        {/* Execute Button */}
-        <button
-          onClick={handleExecute}
-          disabled={!effectiveQuery.trim() || status === 'running'}
-          className={cn(
-            'w-full py-4 font-bold text-sm uppercase tracking-wide transition-all duration-200 flex items-center justify-center gap-3 border-2',
-            status === 'running'
-              ? 'bg-blue-500 text-white border-blue-500'
-              : effectiveQuery.trim()
-                ? 'bg-black text-white border-black hover:bg-white hover:text-black'
-                : 'bg-gray-300 text-gray-500 border-gray-300 cursor-not-allowed'
-          )}
-        >
-          {status === 'running' ? (
-            <>
-              <Loader2 size={18} className="animate-spin" />
-              SEARCHING...
-            </>
-          ) : (
-            <>
-              <Play size={18} />
-              SEARCH X
-            </>
-          )}
-        </button>
-
-        {/* Output Preview */}
-        {output && output.tweets && output.tweets.length > 0 && (
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <label className="text-xs font-bold uppercase tracking-wide text-black">
-                RESULTS ({output.count} TWEETS)
-              </label>
-              <button
-                onClick={handleCopy}
-                className="text-black hover:text-gray-600 transition-colors p-1"
-              >
-                {copied ? <Check size={16} className="text-green-600" /> : <Copy size={16} />}
-              </button>
+          {/* Status/Results */}
+          {status === 'success' && output?.count > 0 && (
+            <div style={{
+              marginTop: '12px',
+              padding: '10px 12px',
+              background: '#f5f5f5',
+              border: '1px solid #e5e5e5',
+            }}>
+              <span style={{
+                fontSize: '10px',
+                fontWeight: 600,
+                color: '#666666',
+              }}>
+                Found {output.count} posts
+              </span>
             </div>
-            <div className="nodrag nowheel border-2 border-black p-4 max-h-[200px] overflow-auto bg-gray-50">
-              {output.tweets.slice(0, 3).map((tweet: any, i: number) => (
-                <div key={tweet.id || i} className="mb-4 last:mb-0 pb-4 last:pb-0 border-b-2 last:border-b-0 border-gray-200">
-                  <p className="text-xs text-gray-500 font-bold mb-2">@{tweet.authorUsername}</p>
-                  <p className="text-xs text-black select-text cursor-text leading-relaxed">
-                    {tweet.text?.slice(0, 120)}{tweet.text?.length > 120 ? '...' : ''}
-                  </p>
-                </div>
-              ))}
-              {output.tweets.length > 3 && (
-                <p className="text-xs text-gray-500 text-center mt-3 font-bold">
-                  +{output.tweets.length - 3} MORE TWEETS
-                </p>
-              )}
+          )}
+
+          {status === 'error' && (
+            <div style={{
+              marginTop: '12px',
+              padding: '10px 12px',
+              background: '#fff5f5',
+              border: '1px solid #ffcccc',
+            }}>
+              <span style={{
+                fontSize: '10px',
+                fontWeight: 600,
+                color: '#cc0000',
+              }}>
+                {nodeExecutionStates[id]?.error || 'Search failed'}
+              </span>
             </div>
-          </div>
-        )}
-
-        {/* No results message */}
-        {output && output.tweets && output.tweets.length === 0 && (
-          <div className="border-2 border-yellow-500 bg-yellow-50 p-4">
-            <p className="text-xs text-yellow-700 font-bold uppercase">
-              NO TWEETS FOUND. TRY: elonmusk, #AI, from:Tesla
-            </p>
-          </div>
-        )}
-
-        {/* Search tips */}
-        {!output && (
-          <div className="text-xs text-gray-600 border-2 border-gray-300 p-4 bg-gray-50">
-            <p className="font-bold text-black mb-2 uppercase">SEARCH TIPS:</p>
-            <p className="mb-1">elonmusk - keyword search</p>
-            <p className="mb-1">from:elonmusk - tweets from user</p>
-            <p>#AI - hashtag search</p>
-          </div>
-        )}
+          )}
+        </div>
       </div>
-    </BaseNode>
+    </div>
   );
 };
 
