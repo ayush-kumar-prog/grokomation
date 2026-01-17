@@ -78,7 +78,7 @@ export interface OutputBlock extends BaseNode {
 
 // ============ PHONE BLOCK ============
 
-export type PhoneContentType = 'default' | 'code' | 'image' | 'webSearch' | 'reasoning';
+export type PhoneContentType = 'default' | 'code' | 'image' | 'webSearch' | 'reasoning' | 'xFetch';
 
 export interface PhoneBlock extends BaseNode {
   type: 'phone';

@@ -23,14 +23,11 @@ interface CodeRendererProps {
 
 const CodeRenderer: React.FC<CodeRendererProps> = ({ code }) => {
   const [error, setError] = useState<string | null>(null);
-  // Use state value (not just setter) to trigger re-renders
   const [renderKey, setRenderKey] = useState(0);
 
-  // Store for component state (simulated React state)
   const stateRef = React.useRef<Map<number, unknown>>(new Map());
   const stateIndexRef = React.useRef(0);
 
-  // Simple useState implementation for the rendered code
   const createUseState = React.useCallback(() => {
     return <T,>(initialValue: T): [T, (value: T | ((prev: T) => T)) => void] => {
       const index = stateIndexRef.current++;
@@ -44,7 +41,6 @@ const CodeRenderer: React.FC<CodeRendererProps> = ({ code }) => {
           ? (newValue as (prev: T) => T)(current)
           : newValue;
         stateRef.current.set(index, next);
-        // Trigger re-render by updating renderKey
         setRenderKey(k => k + 1);
       };
       return [value, setValue];
@@ -53,23 +49,21 @@ const CodeRenderer: React.FC<CodeRendererProps> = ({ code }) => {
 
   const renderedContent = useMemo(() => {
     setError(null);
-    stateIndexRef.current = 0; // Reset state index for re-render
+    stateIndexRef.current = 0;
 
     console.log('[CodeRenderer] Rendering (key=' + renderKey + '):', code.substring(0, 100) + '...');
 
     try {
-      // Create a sandboxed React context
       const useState = createUseState();
 
-      // Wrap the code in a function that returns React elements
       const wrappedCode = `
         try {
           return (${code});
         } catch (e) {
           console.error('[CodeRenderer] Runtime error:', e);
           return React.createElement('div', {
-            style: { color: 'red', padding: '20px', textAlign: 'center' }
-          }, 'Runtime Error: ' + e.message);
+            style: { color: '#000000', padding: '20px', textAlign: 'center', border: '2px solid #000000' }
+          }, 'RUNTIME ERROR: ' + e.message);
         }
       `;
 
@@ -96,10 +90,17 @@ const CodeRenderer: React.FC<CodeRendererProps> = ({ code }) => {
         justifyContent: 'center',
         height: '100%',
         padding: '20px',
-        background: '#fef2f2',
+        background: '#ffffff',
       }}>
-        <AlertCircle size={32} color="#ef4444" />
-        <p style={{ color: '#ef4444', marginTop: '12px', textAlign: 'center', fontSize: '14px' }}>
+        <AlertCircle size={32} color="#000000" />
+        <p style={{
+          color: '#000000',
+          marginTop: '12px',
+          textAlign: 'center',
+          fontSize: '12px',
+          fontWeight: 700,
+          textTransform: 'uppercase',
+        }}>
           {error}
         </p>
       </div>
@@ -127,7 +128,7 @@ const ImageRenderer: React.FC<ImageRendererProps> = ({ imageUrl }) => {
       alignItems: 'center',
       justifyContent: 'center',
       height: '100%',
-      background: '#f8fafc',
+      background: '#ffffff',
       padding: '16px',
     }}>
       {loading && !error && (
@@ -138,8 +139,21 @@ const ImageRenderer: React.FC<ImageRendererProps> = ({ imageUrl }) => {
           alignItems: 'center',
           gap: '8px',
         }}>
-          <div className="w-8 h-8 border-3 border-blue-500 border-t-transparent rounded-full animate-spin" />
-          <span style={{ color: '#6b7280', fontSize: '12px' }}>Loading image...</span>
+          <div style={{
+            width: '32px',
+            height: '32px',
+            border: '3px solid #000000',
+            borderTopColor: 'transparent',
+            animation: 'spin 1s linear infinite',
+          }} />
+          <span style={{
+            color: '#000000',
+            fontSize: '10px',
+            fontWeight: 700,
+            textTransform: 'uppercase',
+          }}>
+            LOADING...
+          </span>
         </div>
       )}
       {error ? (
@@ -149,8 +163,15 @@ const ImageRenderer: React.FC<ImageRendererProps> = ({ imageUrl }) => {
           alignItems: 'center',
           gap: '8px',
         }}>
-          <AlertCircle size={32} color="#ef4444" />
-          <span style={{ color: '#ef4444', fontSize: '12px' }}>Failed to load image</span>
+          <AlertCircle size={32} color="#000000" />
+          <span style={{
+            color: '#000000',
+            fontSize: '10px',
+            fontWeight: 700,
+            textTransform: 'uppercase',
+          }}>
+            FAILED TO LOAD
+          </span>
         </div>
       ) : (
         <img
@@ -160,8 +181,7 @@ const ImageRenderer: React.FC<ImageRendererProps> = ({ imageUrl }) => {
             maxWidth: '100%',
             maxHeight: '100%',
             objectFit: 'contain',
-            borderRadius: '8px',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+            border: '2px solid #000000',
             display: loading ? 'none' : 'block',
           }}
           onLoad={() => setLoading(false)}
@@ -189,7 +209,6 @@ interface WebSearchRendererProps {
   data: string;
 }
 
-// Simple markdown parser for basic formatting
 const parseMarkdown = (text: string): React.ReactNode[] => {
   const lines = text.split('\n');
   const elements: React.ReactNode[] = [];
@@ -197,15 +216,15 @@ const parseMarkdown = (text: string): React.ReactNode[] => {
   lines.forEach((line, index) => {
     const trimmed = line.trim();
 
-    // Headers
     if (trimmed.startsWith('### ')) {
       elements.push(
         <h3 key={index} style={{
-          fontSize: '16px',
-          fontWeight: '700',
-          color: '#0f172a',
+          fontSize: '14px',
+          fontWeight: 700,
+          color: '#000000',
           marginTop: index > 0 ? '16px' : '0',
           marginBottom: '8px',
+          textTransform: 'uppercase',
         }}>
           {trimmed.slice(4)}
         </h3>
@@ -213,11 +232,12 @@ const parseMarkdown = (text: string): React.ReactNode[] => {
     } else if (trimmed.startsWith('## ')) {
       elements.push(
         <h2 key={index} style={{
-          fontSize: '18px',
-          fontWeight: '700',
-          color: '#0f172a',
+          fontSize: '16px',
+          fontWeight: 700,
+          color: '#000000',
           marginTop: index > 0 ? '16px' : '0',
           marginBottom: '8px',
+          textTransform: 'uppercase',
         }}>
           {trimmed.slice(3)}
         </h2>
@@ -225,17 +245,17 @@ const parseMarkdown = (text: string): React.ReactNode[] => {
     } else if (trimmed.startsWith('# ')) {
       elements.push(
         <h1 key={index} style={{
-          fontSize: '20px',
-          fontWeight: '700',
-          color: '#0f172a',
+          fontSize: '18px',
+          fontWeight: 700,
+          color: '#000000',
           marginTop: index > 0 ? '16px' : '0',
           marginBottom: '8px',
+          textTransform: 'uppercase',
         }}>
           {trimmed.slice(2)}
         </h1>
       );
     } else if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
-      // Bullet points
       elements.push(
         <div key={index} style={{
           display: 'flex',
@@ -243,14 +263,13 @@ const parseMarkdown = (text: string): React.ReactNode[] => {
           gap: '8px',
           marginBottom: '6px',
         }}>
-          <span style={{ color: '#3b82f6', fontWeight: '700', marginTop: '2px' }}>•</span>
-          <span style={{ color: '#334155', fontSize: '14px', lineHeight: '1.5', flex: 1 }}>
+          <span style={{ color: '#000000', fontWeight: 700, marginTop: '2px' }}>-</span>
+          <span style={{ color: '#000000', fontSize: '12px', lineHeight: '1.5', flex: 1 }}>
             {formatInlineMarkdown(trimmed.slice(2))}
           </span>
         </div>
       );
     } else if (trimmed.match(/^\d+\.\s/)) {
-      // Numbered lists
       const match = trimmed.match(/^(\d+)\.\s(.*)$/);
       if (match) {
         elements.push(
@@ -260,8 +279,8 @@ const parseMarkdown = (text: string): React.ReactNode[] => {
             gap: '8px',
             marginBottom: '6px',
           }}>
-            <span style={{ color: '#3b82f6', fontWeight: '600', minWidth: '20px' }}>{match[1]}.</span>
-            <span style={{ color: '#334155', fontSize: '14px', lineHeight: '1.5', flex: 1 }}>
+            <span style={{ color: '#000000', fontWeight: 700, minWidth: '20px' }}>{match[1]}.</span>
+            <span style={{ color: '#000000', fontSize: '12px', lineHeight: '1.5', flex: 1 }}>
               {formatInlineMarkdown(match[2])}
             </span>
           </div>
@@ -270,11 +289,10 @@ const parseMarkdown = (text: string): React.ReactNode[] => {
     } else if (trimmed === '') {
       elements.push(<div key={index} style={{ height: '8px' }} />);
     } else {
-      // Regular paragraph
       elements.push(
         <p key={index} style={{
-          color: '#334155',
-          fontSize: '14px',
+          color: '#000000',
+          fontSize: '12px',
           lineHeight: '1.6',
           marginBottom: '8px',
         }}>
@@ -287,15 +305,12 @@ const parseMarkdown = (text: string): React.ReactNode[] => {
   return elements;
 };
 
-// Format inline markdown (bold, italic, links)
 const formatInlineMarkdown = (text: string): React.ReactNode => {
   let remaining = text;
 
-  // Simple regex-based parsing
   const boldRegex = /\*\*(.+?)\*\*/g;
   const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
 
-  // First, replace links with placeholders
   const linkMap: { placeholder: string; text: string; url: string }[] = [];
   remaining = remaining.replace(linkRegex, (_, linkText, url) => {
     const placeholder = `__LINK_${linkMap.length}__`;
@@ -303,7 +318,6 @@ const formatInlineMarkdown = (text: string): React.ReactNode => {
     return placeholder;
   });
 
-  // Then, replace bold with placeholders
   const boldMap: { placeholder: string; text: string }[] = [];
   remaining = remaining.replace(boldRegex, (_, boldText) => {
     const placeholder = `__BOLD_${boldMap.length}__`;
@@ -311,25 +325,20 @@ const formatInlineMarkdown = (text: string): React.ReactNode => {
     return placeholder;
   });
 
-  // Split by placeholders and reconstruct
   const allPlaceholders = [...linkMap.map(l => l.placeholder), ...boldMap.map(b => b.placeholder)];
   if (allPlaceholders.length === 0) {
     return text;
   }
 
-  // Simple split approach
   let result = remaining;
   linkMap.forEach(({ placeholder, text: linkText, url }) => {
-    result = result.replace(placeholder, `<a href="${url}">${linkText}</a>`);
+    result = result.replace(placeholder, `<a href="${url}" style="color:#000000;text-decoration:underline;font-weight:700">${linkText}</a>`);
   });
   boldMap.forEach(({ placeholder, text: boldText }) => {
     result = result.replace(placeholder, `<strong>${boldText}</strong>`);
   });
 
-  // Return as dangerouslySetInnerHTML for simplicity
-  return <span dangerouslySetInnerHTML={{ __html: result }} style={{
-    // Style for links
-  }} />;
+  return <span dangerouslySetInnerHTML={{ __html: result }} />;
 };
 
 const WebSearchRenderer: React.FC<WebSearchRendererProps> = ({ data }) => {
@@ -346,7 +355,14 @@ const WebSearchRenderer: React.FC<WebSearchRendererProps> = ({ data }) => {
         height: '100%',
         padding: '20px',
       }}>
-        <p style={{ color: '#ef4444', textAlign: 'center' }}>Failed to parse search results</p>
+        <p style={{
+          color: '#000000',
+          textAlign: 'center',
+          fontWeight: 700,
+          textTransform: 'uppercase',
+        }}>
+          FAILED TO PARSE
+        </p>
       </div>
     );
   }
@@ -359,11 +375,11 @@ const WebSearchRenderer: React.FC<WebSearchRendererProps> = ({ data }) => {
       display: 'flex',
       flexDirection: 'column',
       overflow: 'hidden',
-      background: '#f8fafc',
+      background: '#ffffff',
     }}>
       {/* Header */}
       <div style={{
-        background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+        background: '#000000',
         padding: '14px 18px',
         flexShrink: 0,
       }}>
@@ -373,33 +389,23 @@ const WebSearchRenderer: React.FC<WebSearchRendererProps> = ({ data }) => {
           gap: '10px',
           marginBottom: '6px',
         }}>
-          <div style={{
-            width: '26px',
-            height: '26px',
-            borderRadius: '8px',
-            background: 'rgba(255,255,255,0.2)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '12px',
-          }}>
-            🔍
-          </div>
           <span style={{
             color: '#ffffff',
-            fontSize: '12px',
-            fontWeight: '500',
-            opacity: 0.9,
+            fontSize: '10px',
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: '1px',
           }}>
-            Web Search
+            WEB SEARCH
           </span>
         </div>
         <p style={{
           color: '#ffffff',
           fontSize: '14px',
-          fontWeight: '600',
+          fontWeight: 700,
           margin: 0,
           lineHeight: 1.4,
+          textTransform: 'uppercase',
         }}>
           {query}
         </p>
@@ -414,10 +420,9 @@ const WebSearchRenderer: React.FC<WebSearchRendererProps> = ({ data }) => {
         {/* Answer Section */}
         <div style={{
           background: '#ffffff',
-          borderRadius: '12px',
+          border: '2px solid #000000',
           padding: '14px',
           marginBottom: '14px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
         }}>
           <div style={{
             display: 'flex',
@@ -428,15 +433,15 @@ const WebSearchRenderer: React.FC<WebSearchRendererProps> = ({ data }) => {
             <div style={{
               width: '8px',
               height: '8px',
-              borderRadius: '50%',
-              background: '#10b981',
+              background: '#000000',
             }} />
             <span style={{
-              color: '#0f172a',
-              fontSize: '14px',
-              fontWeight: '600',
+              color: '#000000',
+              fontSize: '12px',
+              fontWeight: 700,
+              textTransform: 'uppercase',
             }}>
-              Answer
+              ANSWER
             </span>
           </div>
           <div>
@@ -454,19 +459,19 @@ const WebSearchRenderer: React.FC<WebSearchRendererProps> = ({ data }) => {
               marginBottom: '10px',
             }}>
               <span style={{
-                color: '#64748b',
-                fontSize: '12px',
-                fontWeight: '600',
+                color: '#666666',
+                fontSize: '10px',
+                fontWeight: 700,
+                textTransform: 'uppercase',
               }}>
-                Sources
+                SOURCES
               </span>
               <div style={{
-                background: '#e2e8f0',
-                borderRadius: '10px',
+                background: '#000000',
+                color: '#ffffff',
                 padding: '2px 8px',
                 fontSize: '10px',
-                color: '#64748b',
-                fontWeight: '500',
+                fontWeight: 700,
               }}>
                 {sources.length}
               </div>
@@ -476,10 +481,9 @@ const WebSearchRenderer: React.FC<WebSearchRendererProps> = ({ data }) => {
                 key={index}
                 style={{
                   background: '#ffffff',
-                  borderRadius: '10px',
+                  border: '2px solid #000000',
                   padding: '10px 12px',
                   marginBottom: '8px',
-                  border: '1px solid #e2e8f0',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '10px',
@@ -488,31 +492,33 @@ const WebSearchRenderer: React.FC<WebSearchRendererProps> = ({ data }) => {
                 <div style={{
                   width: '28px',
                   height: '28px',
-                  borderRadius: '6px',
-                  background: '#f1f5f9',
+                  background: '#000000',
+                  color: '#ffffff',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontSize: '12px',
+                  fontWeight: 700,
                   flexShrink: 0,
                 }}>
-                  📄
+                  {index + 1}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{
-                    color: '#0f172a',
-                    fontSize: '12px',
-                    fontWeight: '500',
+                    color: '#000000',
+                    fontSize: '11px',
+                    fontWeight: 700,
                     margin: 0,
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
+                    textTransform: 'uppercase',
                   }}>
-                    {source.title || 'Source'}
+                    {source.title || 'SOURCE'}
                   </p>
                   <p style={{
-                    color: '#64748b',
-                    fontSize: '10px',
+                    color: '#666666',
+                    fontSize: '9px',
                     margin: '2px 0 0 0',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
@@ -530,17 +536,20 @@ const WebSearchRenderer: React.FC<WebSearchRendererProps> = ({ data }) => {
       {/* Footer */}
       <div style={{
         padding: '10px 16px',
-        borderTop: '1px solid #e2e8f0',
+        borderTop: '2px solid #000000',
         background: '#ffffff',
         flexShrink: 0,
       }}>
         <p style={{
-          color: '#94a3b8',
-          fontSize: '10px',
+          color: '#666666',
+          fontSize: '9px',
           textAlign: 'center',
           margin: 0,
+          fontWeight: 700,
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px',
         }}>
-          Powered by Grok Web Search
+          POWERED BY GROK
         </p>
       </div>
     </div>
@@ -576,7 +585,14 @@ const ReasoningRenderer: React.FC<ReasoningRendererProps> = ({ data }) => {
         height: '100%',
         padding: '20px',
       }}>
-        <p style={{ color: '#ef4444', textAlign: 'center' }}>Failed to parse research results</p>
+        <p style={{
+          color: '#000000',
+          textAlign: 'center',
+          fontWeight: 700,
+          textTransform: 'uppercase',
+        }}>
+          FAILED TO PARSE
+        </p>
       </div>
     );
   }
@@ -589,11 +605,11 @@ const ReasoningRenderer: React.FC<ReasoningRendererProps> = ({ data }) => {
       display: 'flex',
       flexDirection: 'column',
       overflow: 'hidden',
-      background: '#f8fafc',
+      background: '#ffffff',
     }}>
       {/* Header */}
       <div style={{
-        background: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)',
+        background: '#000000',
         padding: '14px 18px',
         flexShrink: 0,
       }}>
@@ -603,46 +619,35 @@ const ReasoningRenderer: React.FC<ReasoningRendererProps> = ({ data }) => {
           gap: '10px',
           marginBottom: '6px',
         }}>
-          <div style={{
-            width: '26px',
-            height: '26px',
-            borderRadius: '8px',
-            background: 'rgba(255,255,255,0.2)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '12px',
-          }}>
-            🧠
-          </div>
           <span style={{
             color: '#ffffff',
-            fontSize: '12px',
-            fontWeight: '500',
-            opacity: 0.9,
+            fontSize: '10px',
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: '1px',
           }}>
-            Deep Research
+            DEEP RESEARCH
           </span>
           {reasoningTokens && (
             <div style={{
               marginLeft: 'auto',
-              background: 'rgba(255,255,255,0.2)',
-              borderRadius: '10px',
+              background: '#ffffff',
+              color: '#000000',
               padding: '2px 8px',
-              fontSize: '10px',
-              color: '#ffffff',
-              fontWeight: '500',
+              fontSize: '9px',
+              fontWeight: 700,
             }}>
-              {reasoningTokens.toLocaleString()} tokens
+              {reasoningTokens.toLocaleString()} TOKENS
             </div>
           )}
         </div>
         <p style={{
           color: '#ffffff',
           fontSize: '14px',
-          fontWeight: '600',
+          fontWeight: 700,
           margin: 0,
           lineHeight: 1.4,
+          textTransform: 'uppercase',
         }}>
           {query}
         </p>
@@ -657,9 +662,8 @@ const ReasoningRenderer: React.FC<ReasoningRendererProps> = ({ data }) => {
         {/* Analysis Section */}
         <div style={{
           background: '#ffffff',
-          borderRadius: '12px',
+          border: '2px solid #000000',
           padding: '14px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
         }}>
           <div style={{
             display: 'flex',
@@ -670,15 +674,15 @@ const ReasoningRenderer: React.FC<ReasoningRendererProps> = ({ data }) => {
             <div style={{
               width: '8px',
               height: '8px',
-              borderRadius: '50%',
-              background: '#8b5cf6',
+              background: '#000000',
             }} />
             <span style={{
-              color: '#0f172a',
-              fontSize: '14px',
-              fontWeight: '600',
+              color: '#000000',
+              fontSize: '12px',
+              fontWeight: 700,
+              textTransform: 'uppercase',
             }}>
-              Analysis
+              ANALYSIS
             </span>
           </div>
           <div>
@@ -690,17 +694,300 @@ const ReasoningRenderer: React.FC<ReasoningRendererProps> = ({ data }) => {
       {/* Footer */}
       <div style={{
         padding: '10px 16px',
-        borderTop: '1px solid #e2e8f0',
+        borderTop: '2px solid #000000',
         background: '#ffffff',
         flexShrink: 0,
       }}>
         <p style={{
-          color: '#94a3b8',
-          fontSize: '10px',
+          color: '#666666',
+          fontSize: '9px',
           textAlign: 'center',
           margin: 0,
+          fontWeight: 700,
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px',
         }}>
-          Powered by Grok Deep Research
+          POWERED BY GROK
+        </p>
+      </div>
+    </div>
+  );
+};
+
+// ============================================================================
+// X/Twitter Fetch Renderer Component
+// ============================================================================
+
+interface XFetchTweet {
+  id: string;
+  text: string;
+  author: string;
+  username: string;
+  createdAt: string;
+  likes: number;
+  retweets: number;
+  replies: number;
+}
+
+interface XFetchData {
+  query: string;
+  count: number;
+  tweets: XFetchTweet[];
+  searchedAt: string;
+}
+
+interface XFetchRendererProps {
+  data: string;
+}
+
+const formatTimeAgo = (dateString: string): string => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 1) return 'NOW';
+  if (diffMins < 60) return `${diffMins}M`;
+  if (diffHours < 24) return `${diffHours}H`;
+  return `${diffDays}D`;
+};
+
+const formatNumber = (num: number): string => {
+  if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+  if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+  return num.toString();
+};
+
+const XFetchRenderer: React.FC<XFetchRendererProps> = ({ data }) => {
+  let parsed: XFetchData;
+
+  try {
+    parsed = JSON.parse(data);
+  } catch {
+    return (
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100%',
+        padding: '20px',
+      }}>
+        <p style={{
+          color: '#000000',
+          textAlign: 'center',
+          fontWeight: 700,
+          textTransform: 'uppercase',
+        }}>
+          FAILED TO PARSE
+        </p>
+      </div>
+    );
+  }
+
+  const { query, count, tweets } = parsed;
+
+  return (
+    <div style={{
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      overflow: 'hidden',
+      background: '#ffffff',
+    }}>
+      {/* Header */}
+      <div style={{
+        background: '#000000',
+        padding: '14px 18px',
+        flexShrink: 0,
+      }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          marginBottom: '6px',
+        }}>
+          <span style={{
+            color: '#ffffff',
+            fontSize: '10px',
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: '1px',
+          }}>
+            X SEARCH
+          </span>
+          <div style={{
+            marginLeft: 'auto',
+            background: '#ffffff',
+            color: '#000000',
+            padding: '2px 8px',
+            fontSize: '9px',
+            fontWeight: 700,
+          }}>
+            {count} POSTS
+          </div>
+        </div>
+        <p style={{
+          color: '#ffffff',
+          fontSize: '14px',
+          fontWeight: 700,
+          margin: 0,
+          lineHeight: 1.4,
+          textTransform: 'uppercase',
+        }}>
+          {query}
+        </p>
+      </div>
+
+      {/* Tweets List */}
+      <div style={{
+        flex: 1,
+        overflowY: 'auto',
+        padding: '12px',
+      }}>
+        {tweets.length === 0 ? (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '100%',
+          }}>
+            <p style={{
+              color: '#666666',
+              fontSize: '11px',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+            }}>
+              NO POSTS FOUND
+            </p>
+          </div>
+        ) : (
+          tweets.map((tweet, index) => (
+            <div
+              key={tweet.id}
+              style={{
+                background: '#ffffff',
+                border: '2px solid #000000',
+                padding: '12px',
+                marginBottom: index < tweets.length - 1 ? '8px' : 0,
+              }}
+            >
+              {/* Tweet Header */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                marginBottom: '8px',
+              }}>
+                <div style={{
+                  width: '28px',
+                  height: '28px',
+                  background: '#000000',
+                  color: '#ffffff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  flexShrink: 0,
+                }}>
+                  {tweet.author.charAt(0).toUpperCase()}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{
+                    color: '#000000',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    margin: 0,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    textTransform: 'uppercase',
+                  }}>
+                    {tweet.author}
+                  </p>
+                  <p style={{
+                    color: '#666666',
+                    fontSize: '9px',
+                    margin: 0,
+                    fontWeight: 600,
+                  }}>
+                    @{tweet.username}
+                  </p>
+                </div>
+                <span style={{
+                  color: '#666666',
+                  fontSize: '9px',
+                  fontWeight: 700,
+                  flexShrink: 0,
+                }}>
+                  {formatTimeAgo(tweet.createdAt)}
+                </span>
+              </div>
+
+              {/* Tweet Text */}
+              <p style={{
+                color: '#000000',
+                fontSize: '11px',
+                lineHeight: 1.5,
+                margin: '0 0 10px 0',
+                wordBreak: 'break-word',
+              }}>
+                {tweet.text}
+              </p>
+
+              {/* Tweet Stats */}
+              <div style={{
+                display: 'flex',
+                gap: '16px',
+                borderTop: '1px solid #e0e0e0',
+                paddingTop: '8px',
+              }}>
+                <span style={{
+                  color: '#666666',
+                  fontSize: '9px',
+                  fontWeight: 700,
+                }}>
+                  ♡ {formatNumber(tweet.likes)}
+                </span>
+                <span style={{
+                  color: '#666666',
+                  fontSize: '9px',
+                  fontWeight: 700,
+                }}>
+                  ↻ {formatNumber(tweet.retweets)}
+                </span>
+                <span style={{
+                  color: '#666666',
+                  fontSize: '9px',
+                  fontWeight: 700,
+                }}>
+                  💬 {formatNumber(tweet.replies)}
+                </span>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Footer */}
+      <div style={{
+        padding: '10px 16px',
+        borderTop: '2px solid #000000',
+        background: '#ffffff',
+        flexShrink: 0,
+      }}>
+        <p style={{
+          color: '#666666',
+          fontSize: '9px',
+          textAlign: 'center',
+          margin: 0,
+          fontWeight: 700,
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px',
+        }}>
+          POWERED BY X API
         </p>
       </div>
     </div>
@@ -715,29 +1002,36 @@ const DefaultContent: React.FC = () => (
   <>
     <div
       style={{
-        color: '#4CAF50',
+        color: '#000000',
         fontSize: '48px',
-        fontWeight: 'bold',
+        fontWeight: 900,
         marginBottom: '8px',
         fontFamily: 'system-ui, -apple-system, sans-serif',
       }}
     >
       0
     </div>
-    <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '24px' }}>
-      Tap the button to start!
+    <p style={{
+      color: '#666666',
+      fontSize: '12px',
+      marginBottom: '24px',
+      textTransform: 'uppercase',
+      fontWeight: 700,
+      letterSpacing: '0.5px',
+    }}>
+      TAP THE BUTTON TO START
     </p>
     <button
       style={{
-        background: '#4CAF50',
-        color: 'white',
-        fontWeight: 'bold',
-        fontSize: '14px',
+        background: '#000000',
+        color: '#ffffff',
+        fontWeight: 700,
+        fontSize: '12px',
         padding: '12px 24px',
-        borderRadius: '9999px',
-        border: 'none',
+        border: '3px solid #000000',
         cursor: 'pointer',
-        boxShadow: '0 8px 20px -4px rgba(76, 175, 80, 0.5)',
+        textTransform: 'uppercase',
+        letterSpacing: '1px',
       }}
     >
       TAP ME
@@ -765,34 +1059,58 @@ const PhoneNode: React.FC<NodeProps> = ({ id, data }) => {
       className="relative group"
       style={{ width: nodeData.size.width }}
     >
-      {/* Connection Handles - Outside on all sides */}
+      {/* Connection Handles - Brutalist square */}
       <Handle
         type="target"
         position={Position.Top}
         id="top"
-        className="!w-3.5 !h-3.5 !border-2 !border-[#0a0f1a] transition-all hover:!scale-125 !bg-blue-500 !rounded-full"
-        style={{ top: -7 }}
+        style={{
+          width: '12px',
+          height: '12px',
+          background: '#ffffff',
+          border: '2px solid #000000',
+          borderRadius: 0,
+          top: -6,
+        }}
       />
       <Handle
         type="target"
         position={Position.Left}
         id="left"
-        className="!w-3.5 !h-3.5 !border-2 !border-[#0a0f1a] transition-all hover:!scale-125 !bg-blue-500 !rounded-full"
-        style={{ left: -7 }}
+        style={{
+          width: '12px',
+          height: '12px',
+          background: '#ffffff',
+          border: '2px solid #000000',
+          borderRadius: 0,
+          left: -6,
+        }}
       />
       <Handle
         type="source"
         position={Position.Right}
         id="right"
-        className="!w-3.5 !h-3.5 !border-2 !border-[#0a0f1a] transition-all hover:!scale-125 !bg-blue-500 !rounded-full"
-        style={{ right: -7 }}
+        style={{
+          width: '12px',
+          height: '12px',
+          background: '#ffffff',
+          border: '2px solid #000000',
+          borderRadius: 0,
+          right: -6,
+        }}
       />
       <Handle
         type="source"
         position={Position.Bottom}
         id="bottom"
-        className="!w-3.5 !h-3.5 !border-2 !border-[#0a0f1a] transition-all hover:!scale-125 !bg-blue-500 !rounded-full"
-        style={{ bottom: -7 }}
+        style={{
+          width: '12px',
+          height: '12px',
+          background: '#ffffff',
+          border: '2px solid #000000',
+          borderRadius: 0,
+          bottom: -6,
+        }}
       />
 
       {/* Header - Above Phone */}
@@ -806,7 +1124,16 @@ const PhoneNode: React.FC<NodeProps> = ({ id, data }) => {
               onChange={(e) => setTitleValue(e.target.value)}
               onBlur={handleTitleSave}
               onKeyDown={(e) => e.key === 'Enter' && handleTitleSave()}
-              className="bg-transparent text-white text-sm font-medium border-b border-blue-500 focus:outline-none w-32"
+              style={{
+                background: '#ffffff',
+                color: '#000000',
+                fontSize: '12px',
+                fontWeight: 700,
+                border: '2px solid #000000',
+                padding: '4px 8px',
+                textTransform: 'uppercase',
+                width: '120px',
+              }}
               autoFocus
             />
           ) : (
@@ -814,7 +1141,13 @@ const PhoneNode: React.FC<NodeProps> = ({ id, data }) => {
               className="flex items-center gap-1.5 cursor-pointer group/title"
               onClick={() => setIsEditingTitle(true)}
             >
-              <span className="text-white text-sm font-medium group-hover/title:text-blue-400 transition-colors">
+              <span style={{
+                color: '#000000',
+                fontSize: '12px',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+              }}>
                 {nodeData.title}
               </span>
               <Pencil size={12} className="text-gray-500 opacity-0 group-hover/title:opacity-100 transition-opacity" />
@@ -823,57 +1156,97 @@ const PhoneNode: React.FC<NodeProps> = ({ id, data }) => {
         </div>
 
         {/* Right: Control buttons */}
-        <div className="flex items-center gap-0.5">
+        <div className="flex items-center gap-0">
           <div
-            className="drag-handle cursor-grab active:cursor-grabbing p-1.5 text-gray-500 hover:text-white hover:bg-white/10 rounded-md transition-colors"
+            className="drag-handle cursor-grab active:cursor-grabbing flex items-center justify-center transition-colors"
             title="Drag to move"
+            style={{
+              width: '28px',
+              height: '28px',
+              background: '#ffffff',
+              border: '2px solid #000000',
+              color: '#000000',
+            }}
           >
             <GripHorizontal size={14} />
           </div>
           <button
             onClick={() => removeBlock(id)}
-            className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-md transition-colors"
+            className="flex items-center justify-center transition-colors"
             title="Delete"
+            style={{
+              width: '28px',
+              height: '28px',
+              background: '#000000',
+              border: '2px solid #000000',
+              color: '#ffffff',
+              marginLeft: '-2px',
+            }}
           >
             <X size={14} />
           </button>
         </div>
       </div>
 
-      {/* Phone Frame - Dark bezel */}
+      {/* Phone Frame - Brutalist */}
       <div
-        className="relative rounded-[2.5rem] p-3"
+        className="relative p-3"
         style={{
-          backgroundColor: '#1e2432',
-          boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255,255,255,0.05), inset 0 -1px 0 rgba(0,0,0,0.3)'
+          backgroundColor: '#000000',
+          border: '3px solid #000000',
         }}
       >
         {/* Notch/Speaker at top */}
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 w-16 h-1.5 bg-[#0a0f1a] rounded-full z-20" />
+        <div
+          className="absolute top-4 left-1/2 -translate-x-1/2 z-20"
+          style={{
+            width: '60px',
+            height: '6px',
+            background: '#ffffff',
+          }}
+        />
 
         {/* Phone Screen */}
         <div
-          className="relative rounded-[1.75rem] overflow-hidden"
+          className="relative overflow-hidden"
           style={{
             height: nodeData.size.height - 24,
-            backgroundColor: '#000'
+            backgroundColor: '#ffffff',
+            border: '2px solid #000000',
           }}
         >
           {/* Screen Content Container */}
           <div className="h-full flex flex-col">
-            {/* iOS-style Status Bar - inside screen */}
-            <div className="flex items-center justify-between px-5 pt-3 pb-1 bg-[#4A90D9]">
-              <span className="text-white text-[12px] font-semibold">9:41</span>
+            {/* Status Bar - Brutalist */}
+            <div
+              className="flex items-center justify-between px-5 pt-3 pb-1"
+              style={{ background: '#000000' }}
+            >
+              <span style={{
+                color: '#ffffff',
+                fontSize: '12px',
+                fontWeight: 700,
+              }}>
+                9:41
+              </span>
               <div className="flex items-center gap-1">
-                <Signal size={12} className="text-white" />
-                <Wifi size={12} className="text-white" />
-                <Battery size={14} className="text-white" />
+                <Signal size={12} color="#ffffff" />
+                <Wifi size={12} color="#ffffff" />
+                <Battery size={14} color="#ffffff" />
               </div>
             </div>
 
             {/* App Header Bar */}
-            <div className="bg-[#4A90D9] px-5 py-3">
-              <h2 className="text-white text-lg font-bold text-center tracking-tight">
+            <div style={{ background: '#000000', padding: '12px 20px' }}>
+              <h2 style={{
+                color: '#ffffff',
+                fontSize: '16px',
+                fontWeight: 700,
+                textAlign: 'center',
+                textTransform: 'uppercase',
+                letterSpacing: '1px',
+                margin: 0,
+              }}>
                 {nodeData.title}
               </h2>
             </div>
@@ -881,27 +1254,44 @@ const PhoneNode: React.FC<NodeProps> = ({ id, data }) => {
             {/* App Content Area */}
             <div
               className="flex-1 overflow-auto"
-              style={{
-                background: nodeData.contentType === 'default'
-                  ? 'linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%)'
-                  : '#f8fafc'
-              }}
+              style={{ background: '#ffffff' }}
             >
               {nodeData.isLoading ? (
                 <div className="h-full flex flex-col items-center justify-center gap-4">
-                  <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                  <span className="text-gray-500 text-sm font-medium">
-                    {nodeData.contentType === 'code' ? 'Generating app...' :
-                     nodeData.contentType === 'image' ? 'Creating image...' :
-                     nodeData.contentType === 'webSearch' ? 'Searching the web...' :
-                     nodeData.contentType === 'reasoning' ? 'Researching deeply...' :
-                     'Loading...'}
+                  <div style={{
+                    width: '48px',
+                    height: '48px',
+                    border: '4px solid #000000',
+                    borderTopColor: 'transparent',
+                    animation: 'spin 1s linear infinite',
+                  }} />
+                  <span style={{
+                    color: '#000000',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                  }}>
+                    {nodeData.contentType === 'code' ? 'GENERATING APP...' :
+                     nodeData.contentType === 'image' ? 'CREATING IMAGE...' :
+                     nodeData.contentType === 'webSearch' ? 'SEARCHING WEB...' :
+                     nodeData.contentType === 'reasoning' ? 'RESEARCHING...' :
+                     nodeData.contentType === 'xFetch' ? 'SEARCHING X...' :
+                     'LOADING...'}
                   </span>
                 </div>
               ) : nodeData.error ? (
                 <div className="h-full flex flex-col items-center justify-center gap-3 px-4">
-                  <AlertCircle size={32} color="#ef4444" />
-                  <p className="text-red-500 text-sm text-center">{nodeData.error}</p>
+                  <AlertCircle size={32} color="#000000" />
+                  <p style={{
+                    color: '#000000',
+                    fontSize: '11px',
+                    textAlign: 'center',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                  }}>
+                    {nodeData.error}
+                  </p>
                 </div>
               ) : nodeData.contentType === 'webSearch' && nodeData.content ? (
                 <div className="h-full">
@@ -910,6 +1300,10 @@ const PhoneNode: React.FC<NodeProps> = ({ id, data }) => {
               ) : nodeData.contentType === 'reasoning' && nodeData.content ? (
                 <div className="h-full">
                   <ReasoningRenderer data={nodeData.content} />
+                </div>
+              ) : nodeData.contentType === 'xFetch' && nodeData.content ? (
+                <div className="h-full">
+                  <XFetchRenderer data={nodeData.content} />
                 </div>
               ) : nodeData.contentType === 'code' && nodeData.content ? (
                 <div className="h-full">
@@ -924,9 +1318,13 @@ const PhoneNode: React.FC<NodeProps> = ({ id, data }) => {
               )}
             </div>
 
-            {/* Home Indicator */}
-            <div className="bg-[#f1f5f9] py-3 flex justify-center">
-              <div className="w-28 h-1 bg-gray-400 rounded-full" />
+            {/* Home Indicator - Brutalist */}
+            <div style={{ background: '#ffffff', padding: '12px 0' }} className="flex justify-center">
+              <div style={{
+                width: '100px',
+                height: '4px',
+                background: '#000000',
+              }} />
             </div>
           </div>
         </div>

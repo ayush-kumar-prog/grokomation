@@ -7,6 +7,7 @@
 
 import { llmRouter } from './llmRouter';
 import { grokApi } from './grokApi';
+import { searchTweets, type Tweet } from '../api/twitter';
 import type { GrokBlock, Connection, PhoneContentType } from '../types/canvas';
 
 // ============================================================================
@@ -673,6 +674,64 @@ Format your response with markdown headers (##, ###) for sections, bullet points
 }
 
 /**
+ * Execute an X/Twitter fetch workflow
+ * Chat message → Search X/Twitter API → Return tweets for Phone rendering
+ */
+async function executeXFetchWorkflow(userMessage: string): Promise<WorkflowResult> {
+  try {
+    console.log('[WorkflowExecutor] Starting X search for:', userMessage);
+
+    // Call the Twitter search API
+    const searchResult = await searchTweets(userMessage, {
+      maxResults: 15,
+    });
+
+    console.log('[WorkflowExecutor] X search response:', searchResult);
+
+    if (!searchResult.success) {
+      return {
+        success: false,
+        contentType: 'xFetch',
+        content: '',
+        error: searchResult.error || 'Failed to search X',
+      };
+    }
+
+    // Map tweets to a simplified format
+    const tweets = searchResult.tweets.map((tweet: Tweet) => ({
+      id: tweet.id,
+      text: tweet.text,
+      author: tweet.author,
+      username: tweet.authorUsername,
+      createdAt: tweet.createdAt,
+      likes: tweet.likes,
+      retweets: tweet.retweets,
+      replies: tweet.replies,
+    }));
+
+    // Return structured data for the Phone to render
+    return {
+      success: true,
+      contentType: 'xFetch',
+      content: JSON.stringify({
+        query: userMessage,
+        count: searchResult.count,
+        tweets,
+        searchedAt: searchResult.metadata.searchedAt,
+      }),
+    };
+  } catch (error) {
+    console.error('[WorkflowExecutor] X search error:', error);
+    return {
+      success: false,
+      contentType: 'xFetch',
+      content: '',
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+}
+
+/**
  * Main workflow executor
  * Determines the workflow type and executes the appropriate pipeline
  */
@@ -707,6 +766,11 @@ export async function executeWorkflow(
       // Deep research/reasoning workflow
       console.log('[executeWorkflow] Routing to REASONING workflow');
       return executeReasoningWorkflow(userMessage);
+
+    case 'xFetch':
+      // X/Twitter search workflow
+      console.log('[executeWorkflow] Routing to X FETCH workflow');
+      return executeXFetchWorkflow(userMessage);
 
     default:
       console.log('[executeWorkflow] Unknown processingType, returning default');

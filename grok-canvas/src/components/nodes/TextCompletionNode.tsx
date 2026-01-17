@@ -71,6 +71,8 @@ const TextCompletionNode: React.FC<NodeProps> = ({ id, data }) => {
           ? 'webSearch'
           : workflowInfo.processingType === 'reasoning'
           ? 'reasoning'
+          : workflowInfo.processingType === 'xFetch'
+          ? 'xFetch'
           : 'image';
         console.log('[TextCompletionNode] Content type:', contentType);
 
@@ -98,6 +100,8 @@ const TextCompletionNode: React.FC<NodeProps> = ({ id, data }) => {
             return '✓ Web search complete! Results shown on phone.';
           } else if (workflowInfo.processingType === 'reasoning') {
             return '✓ Deep research complete! Analysis shown on phone.';
+          } else if (workflowInfo.processingType === 'xFetch') {
+            return '✓ X search complete! Posts shown on phone.';
           } else if (result.contentType === 'code') {
             return '✓ Generated app and sent to phone!';
           } else {
@@ -179,6 +183,7 @@ const TextCompletionNode: React.FC<NodeProps> = ({ id, data }) => {
       case 'imageInput': return 'IMAGE';
       case 'webSearch': return 'SEARCH';
       case 'reasoning': return 'RESEARCH';
+      case 'xFetch': return 'X';
       default: return 'WORKFLOW';
     }
   };
@@ -346,6 +351,8 @@ const TextCompletionNode: React.FC<NodeProps> = ({ id, data }) => {
                       ? 'ASK ANYTHING TO SEARCH'
                       : workflowInfo.processingType === 'reasoning'
                       ? 'ASK COMPLEX QUESTIONS'
+                      : workflowInfo.processingType === 'xFetch'
+                      ? 'SEARCH X FOR POSTS'
                       : 'SEND A MESSAGE TO START'}
                   </p>
                 </>
@@ -547,6 +554,8 @@ const TextCompletionNode: React.FC<NodeProps> = ({ id, data }) => {
                     ? 'SEARCH QUERY...'
                     : workflowInfo.processingType === 'reasoning'
                     ? 'COMPLEX QUESTION...'
+                    : workflowInfo.processingType === 'xFetch'
+                    ? 'SEARCH X FOR...'
                     : 'TYPE MESSAGE...'
                   : 'TYPE MESSAGE...'
               }

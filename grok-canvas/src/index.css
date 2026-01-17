@@ -1,41 +1,41 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');
 
 @import "tailwindcss";
 
 @theme {
-  --color-background: oklch(0.13 0.02 260);
-  --color-foreground: oklch(0.98 0 0);
-  --color-card: oklch(0.16 0.02 260);
-  --color-card-foreground: oklch(0.98 0 0);
-  --color-popover: oklch(0.16 0.02 260);
-  --color-popover-foreground: oklch(0.98 0 0);
-  --color-primary: oklch(0.70 0.15 280);
-  --color-primary-foreground: oklch(0.98 0 0);
-  --color-secondary: oklch(0.22 0.02 260);
-  --color-secondary-foreground: oklch(0.98 0 0);
-  --color-muted: oklch(0.22 0.02 260);
-  --color-muted-foreground: oklch(0.65 0.02 260);
-  --color-accent: oklch(0.25 0.04 280);
-  --color-accent-foreground: oklch(0.98 0 0);
-  --color-destructive: oklch(0.60 0.20 25);
-  --color-destructive-foreground: oklch(0.98 0 0);
-  --color-border: oklch(0.28 0.02 260);
-  --color-input: oklch(0.22 0.02 260);
-  --color-ring: oklch(0.70 0.15 280);
-  --color-success: oklch(0.70 0.17 155);
-  --color-warning: oklch(0.75 0.15 70);
-  --color-info: oklch(0.65 0.15 250);
-  --radius-sm: 0.5rem;
-  --radius-md: 0.75rem;
-  --radius-lg: 1rem;
-  --radius-xl: 1.25rem;
+  --color-background: #ffffff;
+  --color-foreground: #000000;
+  --color-card: #ffffff;
+  --color-card-foreground: #000000;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #000000;
+  --color-primary: #000000;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #f5f5f5;
+  --color-secondary-foreground: #000000;
+  --color-muted: #f5f5f5;
+  --color-muted-foreground: #666666;
+  --color-accent: #000000;
+  --color-accent-foreground: #ffffff;
+  --color-destructive: #000000;
+  --color-destructive-foreground: #ffffff;
+  --color-border: #000000;
+  --color-input: #ffffff;
+  --color-ring: #000000;
+  --color-success: #000000;
+  --color-warning: #000000;
+  --color-info: #000000;
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
 }
 
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  border-color: var(--color-border);
+  border-color: #000000;
 }
 
 html, body, #root {
@@ -45,78 +45,85 @@ html, body, #root {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: var(--color-background);
-  color: var(--color-foreground);
+  background: #ffffff;
+  color: #000000;
 }
 
-/* React Flow customizations */
+/* React Flow customizations - Brutalist */
 .react-flow__node {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 .react-flow__handle {
-  width: 10px !important;
-  height: 10px !important;
-  border-radius: 50% !important;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  width: 12px !important;
+  height: 12px !important;
+  border-radius: 0 !important;
+  border: 2px solid #000000 !important;
+  background: #ffffff !important;
+  transition: transform 0.1s ease;
 }
 
 .react-flow__handle:hover {
-  transform: scale(1.3);
-  box-shadow: 0 0 12px currentColor;
+  transform: scale(1.2);
+  background: #000000 !important;
 }
 
 .react-flow__handle-left {
-  left: -5px !important;
+  left: -6px !important;
 }
 
 .react-flow__handle-right {
-  right: -5px !important;
+  right: -6px !important;
 }
 
 .react-flow__handle-top {
-  top: -5px !important;
+  top: -6px !important;
 }
 
 .react-flow__handle-bottom {
-  bottom: -5px !important;
+  bottom: -6px !important;
 }
 
-/* Edge styling */
+/* Edge styling - Brutalist */
 .react-flow__edge-path {
+  stroke: #000000 !important;
   stroke-width: 2px !important;
 }
 
-/* Selection */
+/* Selection - Brutalist */
 .react-flow__node.selected > div {
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5), 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  box-shadow: none;
+  outline: 3px solid #000000;
+  outline-offset: 2px;
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar - Brutalist */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(17, 24, 39, 0.5);
-  border-radius: 4px;
+  background: #ffffff;
+  border: 2px solid #000000;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(75, 85, 99, 0.6);
-  border-radius: 4px;
-  border: 2px solid transparent;
-  background-clip: padding-box;
+  background: #000000;
+  border: none;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(107, 114, 128, 0.8);
+  background: #333333;
 }
 
-/* Form elements */
+/* Form elements - Brutalist */
 input, textarea, select {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  border: 2px solid #000000;
+  border-radius: 0;
+  background: #ffffff;
+  color: #000000;
 }
 
 input[type="range"] {
@@ -127,9 +134,9 @@ input[type="range"] {
 }
 
 input[type="range"]::-webkit-slider-track {
-  background: rgba(55, 65, 81, 0.5);
-  height: 6px;
-  border-radius: 3px;
+  background: #000000;
+  height: 4px;
+  border-radius: 0;
 }
 
 input[type="range"]::-webkit-slider-thumb {
@@ -137,71 +144,61 @@ input[type="range"]::-webkit-slider-thumb {
   appearance: none;
   width: 16px;
   height: 16px;
-  border-radius: 50%;
-  background: #10b981;
-  margin-top: -5px;
-  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.4);
-  transition: transform 0.15s ease;
+  border-radius: 0;
+  background: #ffffff;
+  border: 2px solid #000000;
+  margin-top: -6px;
+  box-shadow: none;
+  transition: transform 0.1s ease;
 }
 
 input[type="range"]::-webkit-slider-thumb:hover {
   transform: scale(1.1);
 }
 
-/* Checkbox styling */
+/* Checkbox styling - Brutalist */
 input[type="checkbox"] {
   -webkit-appearance: none;
   appearance: none;
   width: 18px;
   height: 18px;
-  border: 2px solid rgba(75, 85, 99, 0.6);
-  border-radius: 5px;
-  background: rgba(17, 24, 39, 0.5);
+  border: 2px solid #000000;
+  border-radius: 0;
+  background: #ffffff;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.1s ease;
 }
 
 input[type="checkbox"]:checked {
-  background: #3b82f6;
-  border-color: #3b82f6;
+  background: #000000;
   background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e");
 }
 
 input[type="checkbox"]:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+  outline: 2px solid #000000;
+  outline-offset: 2px;
 }
 
 /* Date input styling */
 input[type="date"] {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
-/* Animations */
+/* Animations - Minimal for brutalist */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes pulse-soft {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.2s ease-out;
+  animation: fadeIn 0.15s ease-out;
 }
 
-.animate-pulse-soft {
-  animation: pulse-soft 2s ease-in-out infinite;
-}
-
-/* Phone frame with notch and home indicator */
+/* Phone frame - Brutalist */
 .phone-frame {
   position: relative;
 }
 
-/* Phone notch (top speaker/camera area) */
 .phone-frame::before {
   content: '';
   position: absolute;
@@ -210,12 +207,11 @@ input[type="date"] {
   transform: translateX(-50%);
   width: 60px;
   height: 4px;
-  background-color: rgba(255, 255, 255, 0.3);
-  border-radius: 0 0 4px 4px;
+  background-color: #000000;
+  border-radius: 0;
   z-index: 10;
 }
 
-/* Home indicator (bottom bar) */
 .phone-frame::after {
   content: '';
   position: absolute;
@@ -224,14 +220,23 @@ input[type="date"] {
   transform: translateX(-50%);
   width: 50px;
   height: 3px;
-  background-color: rgba(255, 255, 255, 0.5);
-  border-radius: 2px;
+  background-color: #000000;
+  border-radius: 0;
   z-index: 10;
 }
 
-/* Phone screen styling */
+/* Phone screen styling - Brutalist */
 .phone-screen {
   position: relative;
-  background: #f5f5f5;
+  background: #ffffff;
   overflow: hidden;
+}
+
+/* React Flow background */
+.react-flow__background {
+  background-color: #f5f5f5 !important;
+}
+
+.react-flow__background pattern line {
+  stroke: #e0e0e0 !important;
 }

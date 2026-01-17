@@ -6,7 +6,10 @@ import Header from './Header';
 
 const CanvasContainer: React.FC = () => {
   return (
-    <div className="w-full h-screen bg-gray-950 overflow-hidden flex flex-col">
+    <div
+      className="w-full h-screen overflow-hidden flex flex-col"
+      style={{ background: '#f5f5f5' }}
+    >
       <Header />
       <div className="flex-1 relative">
         <ReactFlowProvider>

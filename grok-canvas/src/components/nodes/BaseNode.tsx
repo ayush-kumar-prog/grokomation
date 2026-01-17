@@ -3,7 +3,6 @@ import { Handle, Position } from '@xyflow/react';
 import { motion } from 'framer-motion';
 import { X, GripHorizontal } from 'lucide-react';
 import { useCanvasStore } from '../../stores/canvasStore';
-import { cn } from '@/lib/utils';
 
 interface BaseNodeProps {
   id: string;
@@ -21,7 +20,6 @@ const BaseNode: React.FC<BaseNodeProps> = ({
   id,
   title,
   icon,
-  color,
   children,
   hasInput = true,
   hasOutput = true,
@@ -38,21 +36,45 @@ const BaseNode: React.FC<BaseNodeProps> = ({
       className="relative"
       style={{ width, height }}
     >
-      {/* Main card */}
-      <div className="bg-[#1e242c] rounded-2xl border-2 border-[#3a4451] shadow-xl overflow-visible relative">
+      {/* Main card - Brutalist */}
+      <div
+        className="overflow-visible relative"
+        style={{
+          background: '#ffffff',
+          border: '3px solid #000000',
+        }}
+      >
         {/* Top Control Bar */}
-        <div className="absolute -top-10 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-[#1a1f25] rounded-lg border border-[#2a3441] px-1 py-1">
+        <div
+          className="absolute -top-10 left-1/2 -translate-x-1/2 flex items-center gap-0"
+          style={{
+            background: '#ffffff',
+            border: '2px solid #000000',
+          }}
+        >
           <div
-            className="drag-handle cursor-grab active:cursor-grabbing p-1.5 text-gray-500 hover:text-white hover:bg-white/10 rounded-md transition-colors"
+            className="drag-handle cursor-grab active:cursor-grabbing flex items-center justify-center transition-colors"
             title="Drag to move"
+            style={{
+              width: '32px',
+              height: '32px',
+              background: '#ffffff',
+              color: '#000000',
+              borderRight: '2px solid #000000',
+            }}
           >
             <GripHorizontal size={14} strokeWidth={2} />
           </div>
-          <div className="w-px h-4 bg-[#2a3441]" />
           <button
             onClick={() => removeBlock(id)}
-            className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-md transition-colors"
+            className="flex items-center justify-center transition-colors"
             title="Delete"
+            style={{
+              width: '32px',
+              height: '32px',
+              background: '#000000',
+              color: '#ffffff',
+            }}
           >
             <X size={14} strokeWidth={2} />
           </button>
@@ -63,11 +85,14 @@ const BaseNode: React.FC<BaseNodeProps> = ({
           type="target"
           position={Position.Top}
           id="top"
-          className={cn(
-            '!w-2.5 !h-2.5 !border-2 !border-[#1a1f25] transition-transform hover:!scale-125',
-            '!bg-purple-500'
-          )}
-          style={{ top: -5 }}
+          style={{
+            width: '12px',
+            height: '12px',
+            background: '#ffffff',
+            border: '2px solid #000000',
+            borderRadius: 0,
+            top: -6,
+          }}
         />
 
         {/* Left Handle (Input) */}
@@ -76,21 +101,39 @@ const BaseNode: React.FC<BaseNodeProps> = ({
             type="target"
             position={Position.Left}
             id="left"
-            className={cn(
-              '!w-2.5 !h-2.5 !border-2 !border-[#1a1f25] transition-transform hover:!scale-125',
-              '!bg-blue-500'
-            )}
-            style={{ left: -5 }}
+            style={{
+              width: '12px',
+              height: '12px',
+              background: '#ffffff',
+              border: '2px solid #000000',
+              borderRadius: 0,
+              left: -6,
+            }}
           />
         )}
 
-        {/* Header */}
+        {/* Header - Brutalist */}
         <div
-          className="px-5 py-4 flex items-center gap-3 rounded-t-2xl"
-          style={{ backgroundColor: color }}
+          className="px-5 py-4 flex items-center gap-3"
+          style={{
+            background: '#000000',
+            borderBottom: '3px solid #000000',
+          }}
         >
-          <span className="text-white">{icon}</span>
-          {title && <span className="text-[15px] font-semibold text-white">{title}</span>}
+          <span style={{ color: '#ffffff' }}>{icon}</span>
+          {title && (
+            <span
+              style={{
+                fontSize: '14px',
+                fontWeight: 700,
+                color: '#ffffff',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+              }}
+            >
+              {title}
+            </span>
+          )}
         </div>
 
         {/* Content */}
@@ -102,11 +145,14 @@ const BaseNode: React.FC<BaseNodeProps> = ({
             type="source"
             position={Position.Right}
             id="right"
-            className={cn(
-              '!w-2.5 !h-2.5 !border-2 !border-[#1a1f25] transition-transform hover:!scale-125',
-              '!bg-emerald-500'
-            )}
-            style={{ right: -5 }}
+            style={{
+              width: '12px',
+              height: '12px',
+              background: '#ffffff',
+              border: '2px solid #000000',
+              borderRadius: 0,
+              right: -6,
+            }}
           />
         )}
 
@@ -115,11 +161,14 @@ const BaseNode: React.FC<BaseNodeProps> = ({
           type="source"
           position={Position.Bottom}
           id="bottom"
-          className={cn(
-            '!w-2.5 !h-2.5 !border-2 !border-[#1a1f25] transition-transform hover:!scale-125',
-            '!bg-orange-500'
-          )}
-          style={{ bottom: -5 }}
+          style={{
+            width: '12px',
+            height: '12px',
+            background: '#ffffff',
+            border: '2px solid #000000',
+            borderRadius: 0,
+            bottom: -6,
+          }}
         />
       </div>
     </motion.div>

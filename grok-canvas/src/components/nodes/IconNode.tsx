@@ -15,36 +15,30 @@ interface IconNodeData {
   size: { width: number; height: number };
 }
 
-const iconConfig: Record<string, { icon: React.ComponentType<any>; color: string; label: string }> = {
+const iconConfig: Record<string, { icon: React.ComponentType<any>; label: string }> = {
   vision: {
     icon: Eye,
-    color: '#f59e0b',
-    label: 'Vision',
+    label: 'VISION',
   },
   codeExecution: {
     icon: Code,
-    color: '#ef4444',
-    label: 'Code',
+    label: 'CODE',
   },
   reasoning: {
     icon: Brain,
-    color: '#ec4899',
-    label: 'Reasoning',
+    label: 'REASON',
   },
   webSearch: {
     icon: Globe,
-    color: '#3b82f6',
-    label: 'Web',
+    label: 'WEB',
   },
   xFetch: {
     icon: XLogo,
-    color: '#ffffff',
     label: 'X',
   },
   imageInput: {
     icon: Image,
-    color: '#8b5cf6',
-    label: 'Image',
+    label: 'IMAGE',
   },
 };
 
@@ -65,35 +59,40 @@ const IconNode: React.FC<NodeProps> = ({ id, data }) => {
       {/* Delete button - shows on hover */}
       <button
         onClick={() => removeBlock(id)}
-        className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10 hover:bg-red-600"
-        style={{ fontSize: '10px' }}
+        className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10"
+        style={{
+          width: '20px',
+          height: '20px',
+          background: '#000000',
+          color: '#ffffff',
+          border: '2px solid #000000',
+        }}
       >
         <X size={12} />
       </button>
 
-      {/* Main icon container */}
+      {/* Main icon container - Brutalist */}
       <div
         style={{
           width: '100%',
           height: '100%',
-          background: `linear-gradient(135deg, ${config.color}20 0%, ${config.color}10 100%)`,
-          border: `2px solid ${config.color}`,
-          borderRadius: '16px',
+          background: '#ffffff',
+          border: '3px solid #000000',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
           gap: '4px',
           cursor: 'pointer',
-          transition: 'all 0.2s',
+          transition: 'all 0.1s',
         }}
       >
-        <Icon size={28} color={config.color} strokeWidth={2} />
+        <Icon size={28} color="#000000" strokeWidth={2} />
         <span
           style={{
             fontSize: '10px',
-            fontWeight: 600,
-            color: config.color,
+            fontWeight: 700,
+            color: '#000000',
             textTransform: 'uppercase',
             letterSpacing: '0.5px',
           }}
@@ -102,17 +101,18 @@ const IconNode: React.FC<NodeProps> = ({ id, data }) => {
         </span>
       </div>
 
-      {/* Handles on all sides */}
+      {/* Handles on all sides - Brutalist square */}
       <Handle
         type="target"
         position={Position.Top}
         id="top"
         style={{
-          width: '10px',
-          height: '10px',
-          background: config.color,
-          border: '2px solid #1a1f25',
-          top: '-5px',
+          width: '12px',
+          height: '12px',
+          background: '#ffffff',
+          border: '2px solid #000000',
+          borderRadius: 0,
+          top: '-6px',
         }}
       />
       <Handle
@@ -120,11 +120,12 @@ const IconNode: React.FC<NodeProps> = ({ id, data }) => {
         position={Position.Left}
         id="left"
         style={{
-          width: '10px',
-          height: '10px',
-          background: config.color,
-          border: '2px solid #1a1f25',
-          left: '-5px',
+          width: '12px',
+          height: '12px',
+          background: '#ffffff',
+          border: '2px solid #000000',
+          borderRadius: 0,
+          left: '-6px',
         }}
       />
       <Handle
@@ -132,11 +133,12 @@ const IconNode: React.FC<NodeProps> = ({ id, data }) => {
         position={Position.Right}
         id="right"
         style={{
-          width: '10px',
-          height: '10px',
-          background: config.color,
-          border: '2px solid #1a1f25',
-          right: '-5px',
+          width: '12px',
+          height: '12px',
+          background: '#ffffff',
+          border: '2px solid #000000',
+          borderRadius: 0,
+          right: '-6px',
         }}
       />
       <Handle
@@ -144,11 +146,12 @@ const IconNode: React.FC<NodeProps> = ({ id, data }) => {
         position={Position.Bottom}
         id="bottom"
         style={{
-          width: '10px',
-          height: '10px',
-          background: config.color,
-          border: '2px solid #1a1f25',
-          bottom: '-5px',
+          width: '12px',
+          height: '12px',
+          background: '#ffffff',
+          border: '2px solid #000000',
+          borderRadius: 0,
+          bottom: '-6px',
         }}
       />
     </div>
