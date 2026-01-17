@@ -1,10 +1,10 @@
 import React, { memo, useState, useCallback, useEffect } from 'react';
 import { type NodeProps } from '@xyflow/react';
-import { Search, Play, Copy, Check, Loader2 } from 'lucide-react';
+import { Search, Play, Copy, Check, Loader2, Bell, Zap } from 'lucide-react';
 import BaseNode from './BaseNode';
 import { useCanvasStore } from '../../stores/canvasStore';
 import { cn } from '@/lib/utils';
-import type { XFetchBlock } from '../../types/canvas';
+import type { XFetchBlock, XDMBlock } from '../../types/canvas';
 import { searchTweets } from '../../api/twitter';
 
 const XLogo: React.FC<{ size?: number; className?: string }> = ({ size = 18, className }) => (
@@ -45,6 +45,20 @@ const XFetchNode: React.FC<NodeProps> = ({ id, data }) => {
     }
     return null;
   }, [connections, blocks, id]);
+
+  // Find connected XDM node (for chained workflow)
+  const getConnectedXDM = useCallback(() => {
+    const outgoingConnections = connections.filter((c) => c.source === id);
+    for (const conn of outgoingConnections) {
+      const targetBlock = blocks.find((b) => b.id === conn.target);
+      if (targetBlock && targetBlock.type === 'xDM') {
+        return targetBlock as XDMBlock;
+      }
+    }
+    return null;
+  }, [connections, blocks, id]);
+
+  const connectedXDM = getConnectedXDM();
 
   // Track if we've already sent this output to prevent loops
   const [lastSentOutputId, setLastSentOutputId] = useState<string | null>(null);
@@ -234,6 +248,83 @@ const XFetchNode: React.FC<NodeProps> = ({ id, data }) => {
             />
           </div>
         </div>
+
+        {/* Monitor Mode Toggle */}
+        {connectedXDM && (
+          <div className="border-2 border-black p-4 bg-yellow-50">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Bell size={16} className="text-black" />
+                <label className="text-xs font-bold uppercase tracking-wide text-black">
+                  MONITOR MODE
+                </label>
+              </div>
+              <button
+                onClick={() => updateBlock(id, { monitorMode: !nodeData.monitorMode })}
+                className={cn(
+                  'w-12 h-6 rounded-none border-2 border-black transition-colors relative',
+                  nodeData.monitorMode ? 'bg-green-500' : 'bg-gray-300'
+                )}
+              >
+                <div
+                  className={cn(
+                    'w-4 h-4 bg-white border border-black absolute top-0.5 transition-all',
+                    nodeData.monitorMode ? 'left-6' : 'left-0.5'
+                  )}
+                />
+              </button>
+            </div>
+
+            {nodeData.monitorMode && (
+              <>
+                {/* Threshold Setting */}
+                <div className="mb-3">
+                  <label className="flex items-center justify-between text-xs font-bold uppercase tracking-wide text-black mb-2">
+                    ALERT THRESHOLD
+                    <span className="text-black">{nodeData.threshold || 300} TWEETS/HR</span>
+                  </label>
+                  <input
+                    type="range"
+                    min="100"
+                    max="1000"
+                    step="50"
+                    value={nodeData.threshold || 300}
+                    onChange={(e) => updateBlock(id, { threshold: parseInt(e.target.value) })}
+                    className="w-full h-2 appearance-none cursor-pointer bg-black [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-yellow-400 [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-black nodrag"
+                  />
+                </div>
+
+                {/* Simulate Threshold Hit Toggle */}
+                <div className="flex items-center justify-between p-3 bg-white border-2 border-dashed border-black">
+                  <div className="flex items-center gap-2">
+                    <Zap size={14} className="text-yellow-600" />
+                    <span className="text-xs font-bold uppercase text-black">
+                      SIMULATE ALERT (DEMO)
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => updateBlock(id, { simulateThresholdHit: !nodeData.simulateThresholdHit })}
+                    className={cn(
+                      'w-10 h-5 rounded-none border-2 border-black transition-colors relative',
+                      nodeData.simulateThresholdHit ? 'bg-yellow-400' : 'bg-gray-200'
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        'w-3 h-3 bg-white border border-black absolute top-0.5 transition-all',
+                        nodeData.simulateThresholdHit ? 'left-5' : 'left-0.5'
+                      )}
+                    />
+                  </button>
+                </div>
+              </>
+            )}
+
+            <p className="text-xs text-gray-600 mt-3">
+              Connected to X DM node - will send alert when threshold is hit
+            </p>
+          </div>
+        )}
 
         {/* Execute Button */}
         <button

@@ -66,6 +66,10 @@ export interface XFetchBlock extends BaseNode {
   count: number;
   includeReplies: boolean;
   query?: string;
+  // Monitoring mode
+  monitorMode?: boolean;
+  threshold?: number; // e.g., 300 tweets/hour triggers alert
+  simulateThresholdHit?: boolean; // For demo: pretend threshold was hit
 }
 
 // Node execution status
@@ -116,6 +120,9 @@ export interface XDMBlock extends BaseNode {
   recipientName: string;
   recipientUsername: string;
   recipientAvatar?: string;
+  // Alert mode - auto-generate synopsis from connected tweets
+  alertMode?: boolean;
+  alertTitle?: string; // e.g., "Tesla Alert"
 }
 
 // ============ OUTPUT BLOCKS ============
