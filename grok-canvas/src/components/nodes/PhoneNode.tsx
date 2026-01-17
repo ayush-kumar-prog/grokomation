@@ -176,41 +176,401 @@ const ImageRenderer: React.FC<ImageRendererProps> = ({ imageUrl }) => {
 };
 
 // ============================================================================
+// Web Search Renderer Component
+// ============================================================================
+
+interface WebSearchData {
+  query: string;
+  answer: string;
+  sources: { title: string; url: string }[];
+}
+
+interface WebSearchRendererProps {
+  data: string;
+}
+
+// Simple markdown parser for basic formatting
+const parseMarkdown = (text: string): React.ReactNode[] => {
+  const lines = text.split('\n');
+  const elements: React.ReactNode[] = [];
+
+  lines.forEach((line, index) => {
+    const trimmed = line.trim();
+
+    // Headers
+    if (trimmed.startsWith('### ')) {
+      elements.push(
+        <h3 key={index} style={{
+          fontSize: '16px',
+          fontWeight: '700',
+          color: '#0f172a',
+          marginTop: index > 0 ? '16px' : '0',
+          marginBottom: '8px',
+        }}>
+          {trimmed.slice(4)}
+        </h3>
+      );
+    } else if (trimmed.startsWith('## ')) {
+      elements.push(
+        <h2 key={index} style={{
+          fontSize: '18px',
+          fontWeight: '700',
+          color: '#0f172a',
+          marginTop: index > 0 ? '16px' : '0',
+          marginBottom: '8px',
+        }}>
+          {trimmed.slice(3)}
+        </h2>
+      );
+    } else if (trimmed.startsWith('# ')) {
+      elements.push(
+        <h1 key={index} style={{
+          fontSize: '20px',
+          fontWeight: '700',
+          color: '#0f172a',
+          marginTop: index > 0 ? '16px' : '0',
+          marginBottom: '8px',
+        }}>
+          {trimmed.slice(2)}
+        </h1>
+      );
+    } else if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+      // Bullet points
+      elements.push(
+        <div key={index} style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: '8px',
+          marginBottom: '6px',
+        }}>
+          <span style={{ color: '#3b82f6', fontWeight: '700', marginTop: '2px' }}>•</span>
+          <span style={{ color: '#334155', fontSize: '14px', lineHeight: '1.5', flex: 1 }}>
+            {formatInlineMarkdown(trimmed.slice(2))}
+          </span>
+        </div>
+      );
+    } else if (trimmed.match(/^\d+\.\s/)) {
+      // Numbered lists
+      const match = trimmed.match(/^(\d+)\.\s(.*)$/);
+      if (match) {
+        elements.push(
+          <div key={index} style={{
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '8px',
+            marginBottom: '6px',
+          }}>
+            <span style={{ color: '#3b82f6', fontWeight: '600', minWidth: '20px' }}>{match[1]}.</span>
+            <span style={{ color: '#334155', fontSize: '14px', lineHeight: '1.5', flex: 1 }}>
+              {formatInlineMarkdown(match[2])}
+            </span>
+          </div>
+        );
+      }
+    } else if (trimmed === '') {
+      elements.push(<div key={index} style={{ height: '8px' }} />);
+    } else {
+      // Regular paragraph
+      elements.push(
+        <p key={index} style={{
+          color: '#334155',
+          fontSize: '14px',
+          lineHeight: '1.6',
+          marginBottom: '8px',
+        }}>
+          {formatInlineMarkdown(trimmed)}
+        </p>
+      );
+    }
+  });
+
+  return elements;
+};
+
+// Format inline markdown (bold, italic, links)
+const formatInlineMarkdown = (text: string): React.ReactNode => {
+  let remaining = text;
+
+  // Simple regex-based parsing
+  const boldRegex = /\*\*(.+?)\*\*/g;
+  const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+
+  // First, replace links with placeholders
+  const linkMap: { placeholder: string; text: string; url: string }[] = [];
+  remaining = remaining.replace(linkRegex, (_, linkText, url) => {
+    const placeholder = `__LINK_${linkMap.length}__`;
+    linkMap.push({ placeholder, text: linkText, url });
+    return placeholder;
+  });
+
+  // Then, replace bold with placeholders
+  const boldMap: { placeholder: string; text: string }[] = [];
+  remaining = remaining.replace(boldRegex, (_, boldText) => {
+    const placeholder = `__BOLD_${boldMap.length}__`;
+    boldMap.push({ placeholder, text: boldText });
+    return placeholder;
+  });
+
+  // Split by placeholders and reconstruct
+  const allPlaceholders = [...linkMap.map(l => l.placeholder), ...boldMap.map(b => b.placeholder)];
+  if (allPlaceholders.length === 0) {
+    return text;
+  }
+
+  // Simple split approach
+  let result = remaining;
+  linkMap.forEach(({ placeholder, text: linkText, url }) => {
+    result = result.replace(placeholder, `<a href="${url}">${linkText}</a>`);
+  });
+  boldMap.forEach(({ placeholder, text: boldText }) => {
+    result = result.replace(placeholder, `<strong>${boldText}</strong>`);
+  });
+
+  // Return as dangerouslySetInnerHTML for simplicity
+  return <span dangerouslySetInnerHTML={{ __html: result }} style={{
+    // Style for links
+  }} />;
+};
+
+const WebSearchRenderer: React.FC<WebSearchRendererProps> = ({ data }) => {
+  let parsed: WebSearchData;
+
+  try {
+    parsed = JSON.parse(data);
+  } catch {
+    return (
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100%',
+        padding: '20px',
+      }}>
+        <p style={{ color: '#ef4444', textAlign: 'center' }}>Failed to parse search results</p>
+      </div>
+    );
+  }
+
+  const { query, answer, sources } = parsed;
+
+  return (
+    <div style={{
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      overflow: 'hidden',
+      background: '#f8fafc',
+    }}>
+      {/* Header */}
+      <div style={{
+        background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+        padding: '14px 18px',
+        flexShrink: 0,
+      }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          marginBottom: '6px',
+        }}>
+          <div style={{
+            width: '26px',
+            height: '26px',
+            borderRadius: '8px',
+            background: 'rgba(255,255,255,0.2)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '12px',
+          }}>
+            🔍
+          </div>
+          <span style={{
+            color: '#ffffff',
+            fontSize: '12px',
+            fontWeight: '500',
+            opacity: 0.9,
+          }}>
+            Web Search
+          </span>
+        </div>
+        <p style={{
+          color: '#ffffff',
+          fontSize: '14px',
+          fontWeight: '600',
+          margin: 0,
+          lineHeight: 1.4,
+        }}>
+          {query}
+        </p>
+      </div>
+
+      {/* Results Content */}
+      <div style={{
+        flex: 1,
+        overflowY: 'auto',
+        padding: '14px 16px',
+      }}>
+        {/* Answer Section */}
+        <div style={{
+          background: '#ffffff',
+          borderRadius: '12px',
+          padding: '14px',
+          marginBottom: '14px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            marginBottom: '12px',
+          }}>
+            <div style={{
+              width: '8px',
+              height: '8px',
+              borderRadius: '50%',
+              background: '#10b981',
+            }} />
+            <span style={{
+              color: '#0f172a',
+              fontSize: '14px',
+              fontWeight: '600',
+            }}>
+              Answer
+            </span>
+          </div>
+          <div>
+            {parseMarkdown(answer)}
+          </div>
+        </div>
+
+        {/* Sources Section */}
+        {sources && sources.length > 0 && (
+          <div>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              marginBottom: '10px',
+            }}>
+              <span style={{
+                color: '#64748b',
+                fontSize: '12px',
+                fontWeight: '600',
+              }}>
+                Sources
+              </span>
+              <div style={{
+                background: '#e2e8f0',
+                borderRadius: '10px',
+                padding: '2px 8px',
+                fontSize: '10px',
+                color: '#64748b',
+                fontWeight: '500',
+              }}>
+                {sources.length}
+              </div>
+            </div>
+            {sources.map((source, index) => (
+              <div
+                key={index}
+                style={{
+                  background: '#ffffff',
+                  borderRadius: '10px',
+                  padding: '10px 12px',
+                  marginBottom: '8px',
+                  border: '1px solid #e2e8f0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                }}
+              >
+                <div style={{
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '6px',
+                  background: '#f1f5f9',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '12px',
+                  flexShrink: 0,
+                }}>
+                  📄
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{
+                    color: '#0f172a',
+                    fontSize: '12px',
+                    fontWeight: '500',
+                    margin: 0,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}>
+                    {source.title || 'Source'}
+                  </p>
+                  <p style={{
+                    color: '#64748b',
+                    fontSize: '10px',
+                    margin: '2px 0 0 0',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}>
+                    {source.url?.replace(/^https?:\/\//, '').split('/')[0] || ''}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Footer */}
+      <div style={{
+        padding: '10px 16px',
+        borderTop: '1px solid #e2e8f0',
+        background: '#ffffff',
+        flexShrink: 0,
+      }}>
+        <p style={{
+          color: '#94a3b8',
+          fontSize: '10px',
+          textAlign: 'center',
+          margin: 0,
+        }}>
+          Powered by Grok Web Search
+        </p>
+      </div>
+    </div>
+  );
+};
+
+// ============================================================================
 // Default Content Component
 // ============================================================================
 
 const DefaultContent: React.FC = () => (
-  <>
-    <div
+  <div
+    style={{
+      width: '100%',
+      height: '100%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    }}
+  >
+    <img
+      src="/images/default-phone-bg.png"
+      alt="Grok Flow"
       style={{
-        color: '#4CAF50',
-        fontSize: '48px',
-        fontWeight: 'bold',
-        marginBottom: '8px',
-        fontFamily: 'system-ui, -apple-system, sans-serif',
+        width: '100%',
+        height: '100%',
+        objectFit: 'cover',
       }}
-    >
-      0
-    </div>
-    <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '24px' }}>
-      Tap the button to start!
-    </p>
-    <button
-      style={{
-        background: '#4CAF50',
-        color: 'white',
-        fontWeight: 'bold',
-        fontSize: '14px',
-        padding: '12px 24px',
-        borderRadius: '9999px',
-        border: 'none',
-        cursor: 'pointer',
-        boxShadow: '0 8px 20px -4px rgba(76, 175, 80, 0.5)',
-      }}
-    >
-      TAP ME
-    </button>
-  </>
+    />
+  </div>
 );
 
 const PhoneNode: React.FC<NodeProps> = ({ id, data }) => {
@@ -348,10 +708,10 @@ const PhoneNode: React.FC<NodeProps> = ({ id, data }) => {
 
             {/* App Content Area */}
             <div
-              className="flex-1 overflow-auto"
+              className="flex-1 overflow-hidden"
               style={{
                 background: nodeData.contentType === 'default'
-                  ? 'linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%)'
+                  ? '#000'
                   : '#f8fafc'
               }}
             >
@@ -361,6 +721,7 @@ const PhoneNode: React.FC<NodeProps> = ({ id, data }) => {
                   <span className="text-gray-500 text-sm font-medium">
                     {nodeData.contentType === 'code' ? 'Generating app...' :
                      nodeData.contentType === 'image' ? 'Creating image...' :
+                     nodeData.contentType === 'webSearch' ? 'Searching the web...' :
                      'Loading...'}
                   </span>
                 </div>
@@ -369,6 +730,10 @@ const PhoneNode: React.FC<NodeProps> = ({ id, data }) => {
                   <AlertCircle size={32} color="#ef4444" />
                   <p className="text-red-500 text-sm text-center">{nodeData.error}</p>
                 </div>
+              ) : nodeData.contentType === 'webSearch' && nodeData.content ? (
+                <div className="h-full">
+                  <WebSearchRenderer data={nodeData.content} />
+                </div>
               ) : nodeData.contentType === 'code' && nodeData.content ? (
                 <div className="h-full">
                   <CodeRenderer code={nodeData.content} />
@@ -376,7 +741,7 @@ const PhoneNode: React.FC<NodeProps> = ({ id, data }) => {
               ) : nodeData.contentType === 'image' && nodeData.content ? (
                 <ImageRenderer imageUrl={nodeData.content} />
               ) : (
-                <div className="h-full flex flex-col items-center justify-center px-6">
+                <div className="h-full w-full">
                   <DefaultContent />
                 </div>
               )}
