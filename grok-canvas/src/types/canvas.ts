@@ -59,9 +59,50 @@ export interface WebSearchBlock extends BaseNode {
   type: 'webSearch';
 }
 
-// Icon-only X fetch block
+// X fetch block with full properties
 export interface XFetchBlock extends BaseNode {
   type: 'xFetch';
+  fetchType: 'search' | 'user_timeline' | 'mentions' | 'trending';
+  count: number;
+  includeReplies: boolean;
+  query?: string;
+}
+
+// Node execution status
+export type NodeExecutionStatus = 'idle' | 'running' | 'success' | 'error';
+
+// Execution state for a node
+export interface NodeExecutionState {
+  status: NodeExecutionStatus;
+  output?: unknown;
+  error?: string;
+  startedAt?: number;
+  completedAt?: number;
+}
+
+// Tweet structure from X API
+export interface Tweet {
+  id: string;
+  text: string;
+  author: string;
+  authorUsername: string;
+  createdAt: string;
+  likes: number;
+  retweets: number;
+  replies: number;
+}
+
+// X Node output structure
+export interface XNodeOutput {
+  success: boolean;
+  query: string;
+  count: number;
+  tweets: Tweet[];
+  metadata: {
+    searchedAt: string;
+    apiResponseTime: number;
+  };
+  error?: string;
 }
 
 // Icon-only capability block
@@ -78,7 +119,7 @@ export interface OutputBlock extends BaseNode {
 
 // ============ PHONE BLOCK ============
 
-export type PhoneContentType = 'default' | 'code' | 'image' | 'webSearch' | 'reasoning' | 'xFetch';
+export type PhoneContentType = 'default' | 'code' | 'image' | 'webSearch' | 'reasoning' | 'xFetch' | 'xDM';
 
 export interface PhoneBlock extends BaseNode {
   type: 'phone';

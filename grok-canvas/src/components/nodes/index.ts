@@ -3,6 +3,7 @@ import ImageInputNode from './ImageInputNode';
 import TextCompletionNode from './TextCompletionNode';
 import PhoneNode from './PhoneNode';
 import IconNode from './IconNode';
+import XFetchNode from './XFetchNode';
 
 export const nodeTypes = {
   textInput: TextInputNode,
@@ -11,7 +12,7 @@ export const nodeTypes = {
   phone: PhoneNode,
   reasoning: IconNode,
   webSearch: IconNode,
-  xFetch: IconNode,
+  xFetch: XFetchNode,
   vision: IconNode,
   codeExecution: IconNode,
 };

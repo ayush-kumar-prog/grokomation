@@ -9,6 +9,9 @@ import type {
   TextInputBlock,
   TextCompletionBlock,
   PhoneBlock,
+  XFetchBlock,
+  NodeExecutionState,
+  NodeExecutionStatus,
 } from '../types/canvas';
 
 const generateId = () => nanoid(10);
@@ -19,10 +22,11 @@ const blockSizes: Record<string, { width: number; height: number }> = {
   imageInput: { width: 80, height: 80 },
   textCompletion: { width: 390, height: 840 },
   phone: { width: 304, height: 580 },
+  // X Fetch node - full size
+  xFetch: { width: 380, height: 520 },
   // Icon nodes - small size
   reasoning: { width: 80, height: 80 },
   webSearch: { width: 80, height: 80 },
-  xFetch: { width: 80, height: 80 },
   vision: { width: 80, height: 80 },
   codeExecution: { width: 80, height: 80 },
 };
@@ -48,13 +52,28 @@ interface CanvasStore extends CanvasState {
 
   // Bulk operations
   clearCanvas: () => void;
+
+  // ============ EXECUTION STATE ============
+  nodeExecutionStates: Record<string, NodeExecutionState>;
+  nodeOutputs: Record<string, unknown>;
+
+  // Execution actions
+  setNodeExecutionStatus: (nodeId: string, status: NodeExecutionStatus, error?: string) => void;
+  setNodeOutput: (nodeId: string, output: unknown) => void;
+  getNodeOutput: (nodeId: string) => unknown;
+  clearExecutionStates: () => void;
+  getInputFromConnections: (nodeId: string) => unknown | undefined;
 }
 
-export const useCanvasStore = create<CanvasStore>((set) => ({
+export const useCanvasStore = create<CanvasStore>((set, get) => ({
   blocks: [],
   connections: [],
   selectedTool: 'select',
   viewport: { x: 0, y: 0, zoom: 1 },
+
+  // Execution state
+  nodeExecutionStates: {},
+  nodeOutputs: {},
 
   setSelectedTool: (tool) => set({ selectedTool: tool }),
 
@@ -124,7 +143,11 @@ export const useCanvasStore = create<CanvasStore>((set) => ({
         newBlock = {
           ...baseBlock,
           type: 'xFetch',
-        } as GrokBlock;
+          fetchType: 'search',
+          count: 10,
+          includeReplies: false,
+          query: '',
+        } as XFetchBlock;
         break;
 
       case 'codeExecution':
@@ -220,5 +243,82 @@ export const useCanvasStore = create<CanvasStore>((set) => ({
       blocks: [],
       connections: [],
       selectedTool: 'select',
+      nodeExecutionStates: {},
+      nodeOutputs: {},
     }),
+
+  // ============ EXECUTION ACTIONS ============
+
+  setNodeExecutionStatus: (nodeId, status, error) => {
+    set((state) => ({
+      nodeExecutionStates: {
+        ...state.nodeExecutionStates,
+        [nodeId]: {
+          ...state.nodeExecutionStates[nodeId],
+          status,
+          error,
+          ...(status === 'running' ? { startedAt: Date.now() } : {}),
+          ...(status === 'success' || status === 'error' ? { completedAt: Date.now() } : {}),
+        },
+      },
+    }));
+  },
+
+  setNodeOutput: (nodeId, output) => {
+    set((state) => ({
+      nodeOutputs: {
+        ...state.nodeOutputs,
+        [nodeId]: output,
+      },
+      nodeExecutionStates: {
+        ...state.nodeExecutionStates,
+        [nodeId]: {
+          ...state.nodeExecutionStates[nodeId],
+          status: 'success' as NodeExecutionStatus,
+          output,
+          completedAt: Date.now(),
+        },
+      },
+    }));
+  },
+
+  getNodeOutput: (nodeId) => {
+    return get().nodeOutputs[nodeId];
+  },
+
+  clearExecutionStates: () => {
+    set({
+      nodeExecutionStates: {},
+      nodeOutputs: {},
+    });
+  },
+
+  getInputFromConnections: (nodeId) => {
+    const state = get();
+    // Find connections where this node is the target
+    const incomingConnections = state.connections.filter((c) => c.target === nodeId);
+
+    if (incomingConnections.length === 0) {
+      return undefined;
+    }
+
+    // Get the output from the first connected source node
+    const sourceNodeId = incomingConnections[0].source;
+
+    // First check nodeOutputs (for executed nodes like X Search)
+    if (state.nodeOutputs[sourceNodeId] !== undefined) {
+      return state.nodeOutputs[sourceNodeId];
+    }
+
+    // Then check block data (for input nodes like TextInput)
+    const sourceBlock = state.blocks.find((b) => b.id === sourceNodeId);
+    if (sourceBlock) {
+      // TextInput stores value in block data
+      if (sourceBlock.type === 'textInput' && 'value' in sourceBlock) {
+        return (sourceBlock as TextInputBlock).value;
+      }
+    }
+
+    return undefined;
+  },
 }));
