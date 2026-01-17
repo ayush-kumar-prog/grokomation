@@ -7,6 +7,7 @@ import WebSearchNode from './WebSearchNode';
 import XSearchNode from './XSearchNode';
 import CodeExecutionNode from './CodeExecutionNode';
 import OutputNode from './OutputNode';
+import PostToXNode from './PostToXNode';
 
 export const nodeTypes = {
   textInput: TextInputNode,
@@ -18,4 +19,5 @@ export const nodeTypes = {
   xSearch: XSearchNode,
   codeExecution: CodeExecutionNode,
   output: OutputNode,
+  postToX: PostToXNode,
 };

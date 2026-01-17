@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grok Flows - Bookmarklet Install</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #000;
+      color: #e7e9ea;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: 32px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    h1 svg { width: 40px; height: 40px; }
+    .subtitle {
+      color: #71767b;
+      font-size: 18px;
+      margin-bottom: 40px;
+    }
+    .step {
+      background: #16181c;
+      border: 1px solid #2f3336;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    .step-number {
+      background: #1d9bf0;
+      color: white;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 16px;
+      margin-bottom: 12px;
+    }
+    .step h2 {
+      font-size: 20px;
+      margin-bottom: 12px;
+    }
+    .step p {
+      color: #71767b;
+      line-height: 1.5;
+      margin-bottom: 16px;
+    }
+    .bookmarklet-btn {
+      display: inline-block;
+      background: #1d9bf0;
+      color: white;
+      padding: 16px 32px;
+      border-radius: 9999px;
+      font-size: 16px;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: grab;
+    }
+    .bookmarklet-btn:hover {
+      background: #1a8cd8;
+    }
+    .code-box {
+      background: #000;
+      border: 1px solid #2f3336;
+      border-radius: 8px;
+      padding: 16px;
+      overflow-x: auto;
+      margin-top: 12px;
+    }
+    .code-box code {
+      font-family: monospace;
+      font-size: 13px;
+      color: #1d9bf0;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .copy-btn {
+      background: #2f3336;
+      color: #e7e9ea;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-top: 12px;
+    }
+    .copy-btn:hover {
+      background: #3a3d42;
+    }
+    .note {
+      background: rgba(29, 155, 240, 0.1);
+      border: 1px solid rgba(29, 155, 240, 0.3);
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 20px;
+      font-size: 14px;
+      color: #1d9bf0;
+    }
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 40px;
+    }
+    .feature {
+      background: #16181c;
+      border: 1px solid #2f3336;
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .feature h3 {
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+    .feature p {
+      color: #71767b;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      Grok Flows
+    </h1>
+    <p class="subtitle">Natural language workflows for X</p>
+
+    <div class="step">
+      <div class="step-number">1</div>
+      <h2>Drag this to your bookmarks bar</h2>
+      <p>Simply drag the button below to your browser's bookmarks bar:</p>
+      <a class="bookmarklet-btn" id="bookmarklet" href="#">Grok Flows</a>
+      <p style="margin-top: 16px; font-size: 14px;">Or right-click → "Bookmark This Link"</p>
+    </div>
+
+    <div class="step">
+      <div class="step-number">2</div>
+      <h2>Make sure localhost is running</h2>
+      <p>This bookmarklet connects to your local dev server. Make sure it's running:</p>
+      <div class="code-box">
+        <code>cd grok-canvas && npm run dev</code>
+      </div>
+      <p style="margin-top: 12px;">Server should be running at: <strong>http://localhost:5173</strong></p>
+    </div>
+
+    <div class="step">
+      <div class="step-number">3</div>
+      <h2>Go to X.com and run the script</h2>
+      <p>X.com blocks external scripts, so for the demo:</p>
+      <ol style="color: #e7e9ea; margin-left: 20px; line-height: 2; margin-top: 12px;">
+        <li>Go to <a href="https://x.com" target="_blank" style="color: #1d9bf0;">x.com</a></li>
+        <li>Open browser console: <strong>Cmd+Option+J</strong> (Mac) or <strong>F12</strong> (Windows)</li>
+        <li>Click the button below to copy the script</li>
+        <li>Paste in the console and press Enter</li>
+      </ol>
+      <button class="copy-btn" id="copyScriptBtn" style="margin-top: 16px; background: #1d9bf0; font-size: 16px; padding: 12px 24px;">
+        Copy Script to Clipboard
+      </button>
+      <p style="margin-top: 12px; color: #71767b; font-size: 14px;">You'll see "Grok Flows" appear in the sidebar and a chat overlay!</p>
+    </div>
+
+    <div class="step">
+      <div class="step-number">4</div>
+      <h2>Try some example queries</h2>
+      <p>Type natural language queries in the chat:</p>
+      <ul style="color: #71767b; margin-left: 20px; line-height: 2;">
+        <li>"find me elon musk's most recent 10 tweets"</li>
+        <li>"notify me when theres 50 #crypto posts per hour"</li>
+        <li>"search @Tesla's latest posts"</li>
+        <li>"show me #AI tweets"</li>
+      </ul>
+    </div>
+
+    <div class="note">
+      <strong>Note:</strong> For the demo, the bookmarklet connects to your local dev server at localhost:5173.
+      The X API requests are proxied through the server which has the API keys configured.
+    </div>
+
+    <h2 style="margin-top: 40px; margin-bottom: 20px;">Features</h2>
+    <div class="features">
+      <div class="feature">
+        <h3>Natural Language</h3>
+        <p>Just type what you want in plain English</p>
+      </div>
+      <div class="feature">
+        <h3>Real X Data</h3>
+        <p>Fetches actual tweets from the X API</p>
+      </div>
+      <div class="feature">
+        <h3>Save Workflows</h3>
+        <p>Save and reuse your favorite queries</p>
+      </div>
+      <div class="feature">
+        <h3>Open in Canvas</h3>
+        <p>Edit workflows visually with nodes</p>
+      </div>
+    </div>
+
+    <div class="step" style="margin-top: 40px;">
+      <h2>Full Bookmarklet Code</h2>
+      <p>If dragging doesn't work, you can manually create a bookmark with this code:</p>
+      <div class="code-box" style="max-height: 200px; overflow-y: auto;">
+        <code id="fullCode"></code>
+      </div>
+      <button class="copy-btn" onclick="copyCode()">Copy to Clipboard</button>
+    </div>
+  </div>
+
+  <script>
+    // Simple loader bookmarklet - loads the full script from localhost
+    const loaderCode = `javascript:(function(){var s=document.createElement('script');s.src='http://localhost:5173/src/inject/grok-flows-bookmarklet.js?t='+Date.now();document.body.appendChild(s);})()`;
+
+    document.getElementById('bookmarklet').href = loaderCode;
+    document.getElementById('fullCode').textContent = loaderCode;
+
+    // Load the full script for copy-paste
+    let fullScript = '';
+    fetch('/src/inject/grok-flows-bookmarklet.js')
+      .then(r => r.text())
+      .then(code => {
+        fullScript = code;
+        console.log('Script loaded, ready to copy');
+      });
+
+    document.getElementById('copyScriptBtn').onclick = function() {
+      if (fullScript) {
+        navigator.clipboard.writeText(fullScript).then(() => {
+          this.textContent = 'Copied! Now paste in X.com console';
+          this.style.background = '#00ba7c';
+          setTimeout(() => {
+            this.textContent = 'Copy Script to Clipboard';
+            this.style.background = '#1d9bf0';
+          }, 3000);
+        });
+      } else {
+        this.textContent = 'Loading script...';
+        fetch('/src/inject/grok-flows-bookmarklet.js')
+          .then(r => r.text())
+          .then(code => {
+            fullScript = code;
+            navigator.clipboard.writeText(code);
+            this.textContent = 'Copied! Now paste in X.com console';
+            this.style.background = '#00ba7c';
+          });
+      }
+    };
+
+    function copyCode() {
+      navigator.clipboard.writeText(loaderCode).then(() => {
+        document.querySelector('.copy-btn:not(#copyScriptBtn)').textContent = 'Copied!';
+        setTimeout(() => {
+          document.querySelector('.copy-btn:not(#copyScriptBtn)').textContent = 'Copy to Clipboard';
+        }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>

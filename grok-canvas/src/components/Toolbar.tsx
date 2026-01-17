@@ -9,6 +9,7 @@ import {
   Globe,
   Code,
   ArrowRightFromLine,
+  Send,
 } from 'lucide-react';
 import { useCanvasStore } from '../stores/canvasStore';
 import type { ToolType } from '../types/canvas';
@@ -35,7 +36,8 @@ const tools: ToolItem[] = [
   { id: 'vision', icon: Eye, label: 'Vision', color: '#f59e0b' },
   { id: 'reasoning', icon: Brain, label: 'Reasoning', color: '#ec4899' },
   { id: 'webSearch', icon: Globe, label: 'Web Search', color: '#3b82f6' },
-  { id: 'xSearch', icon: XLogo, label: 'X', color: '#ffffff' },
+  { id: 'xSearch', icon: XLogo, label: 'X Search', color: '#ffffff' },
+  { id: 'postToX', icon: Send, label: 'Post to X', color: '#1d9bf0' },
   { id: 'codeExecution', icon: Code, label: 'Code Execution', color: '#ef4444' },
   { id: 'output', icon: ArrowRightFromLine, label: 'Output', color: '#64748b' },
 ];

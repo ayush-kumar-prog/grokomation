@@ -109,6 +109,7 @@ export type ToolType =
   | 'reasoning'
   | 'webSearch'
   | 'xSearch'
+  | 'postToX'
   | 'codeExecution'
   | 'output';
 
@@ -142,4 +143,60 @@ export interface BlockCategory {
     icon: string;
     color: string;
   }[];
+}
+
+// ============ EXECUTION TYPES ============
+
+// Node execution status
+export type NodeExecutionStatus = 'idle' | 'validating' | 'running' | 'success' | 'error';
+
+// Execution state for a node
+export interface NodeExecutionState {
+  status: NodeExecutionStatus;
+  output?: unknown;
+  error?: string;
+  startedAt?: number;
+  completedAt?: number;
+}
+
+// ============ X NODE OUTPUT TYPES ============
+
+// Tweet structure from X API
+export interface Tweet {
+  id: string;
+  text: string;
+  author: string;
+  authorUsername: string;
+  createdAt: string;
+  likes: number;
+  retweets: number;
+  replies: number;
+}
+
+// X Node output structure
+export interface XNodeOutput {
+  success: boolean;
+  query: string;
+  threshold?: number;
+  timeWindow?: string;
+  count: number;
+  tweets: Tweet[];
+  metadata: {
+    searchedAt: string;
+    apiResponseTime: number;
+  };
+  error?: string;
+}
+
+// ============ VALIDATION TYPES ============
+
+// Grok validation result for X queries
+export interface XQueryValidationResult {
+  valid: boolean;
+  reason?: string;
+  parsed?: {
+    searchQuery: string;
+    threshold?: number;
+    timeWindow?: string;
+  };
 }
