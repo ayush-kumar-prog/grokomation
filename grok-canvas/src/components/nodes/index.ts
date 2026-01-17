@@ -4,6 +4,7 @@ import TextCompletionNode from './TextCompletionNode';
 import PhoneNode from './PhoneNode';
 import IconNode from './IconNode';
 import XFetchNode from './XFetchNode';
+import XDMNode from './XDMNode';
 
 export const nodeTypes = {
   textInput: TextInputNode,
@@ -13,6 +14,7 @@ export const nodeTypes = {
   reasoning: IconNode,
   webSearch: IconNode,
   xFetch: XFetchNode,
+  xDM: XDMNode,
   vision: IconNode,
   codeExecution: IconNode,
 };

@@ -8,6 +8,7 @@ import {
   Image,
   Code,
   Smartphone,
+  Send,
 } from 'lucide-react';
 import { useCanvasStore } from '../stores/canvasStore';
 import { Tooltip } from './ui/tooltip';
@@ -31,6 +32,7 @@ const tools: ToolItem[] = [
   { id: 'reasoning', icon: Brain, label: 'REASONING' },
   { id: 'webSearch', icon: Globe, label: 'WEB SEARCH' },
   { id: 'xFetch', icon: XLogo, label: 'X FETCH' },
+  { id: 'xDM', icon: Send, label: 'X DM' },
   { id: 'imageInput', icon: Image, label: 'IMAGE' },
   { id: 'codeExecution', icon: Code, label: 'CODE' },
   { id: 'phone', icon: Smartphone, label: 'PHONE' },

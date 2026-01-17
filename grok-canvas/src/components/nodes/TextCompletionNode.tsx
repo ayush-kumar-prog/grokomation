@@ -73,6 +73,8 @@ const TextCompletionNode: React.FC<NodeProps> = ({ id, data }) => {
           ? 'reasoning'
           : workflowInfo.processingType === 'xFetch'
           ? 'xFetch'
+          : workflowInfo.processingType === 'xDM'
+          ? 'xDM'
           : 'image';
         console.log('[TextCompletionNode] Content type:', contentType);
 
@@ -83,8 +85,8 @@ const TextCompletionNode: React.FC<NodeProps> = ({ id, data }) => {
           error: undefined,
         });
 
-        // Execute the workflow
-        const result = await executeWorkflow(userContent, workflowInfo.processingType);
+        // Execute the workflow (pass processing node for context like XDM recipient info)
+        const result = await executeWorkflow(userContent, workflowInfo.processingType, workflowInfo.processingNode);
 
         // Update the phone with the result
         updateBlock(workflowInfo.targetId, {
@@ -102,6 +104,8 @@ const TextCompletionNode: React.FC<NodeProps> = ({ id, data }) => {
             return '✓ Deep research complete! Analysis shown on phone.';
           } else if (workflowInfo.processingType === 'xFetch') {
             return '✓ X search complete! Posts shown on phone.';
+          } else if (workflowInfo.processingType === 'xDM') {
+            return '✓ DM sent! Conversation shown on phone.';
           } else if (result.contentType === 'code') {
             return '✓ Generated app and sent to phone!';
           } else {
@@ -184,6 +188,7 @@ const TextCompletionNode: React.FC<NodeProps> = ({ id, data }) => {
       case 'webSearch': return 'SEARCH';
       case 'reasoning': return 'RESEARCH';
       case 'xFetch': return 'X';
+      case 'xDM': return 'DM';
       default: return 'WORKFLOW';
     }
   };

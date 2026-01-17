@@ -786,7 +786,10 @@ const XFetchRenderer: React.FC<XFetchRendererProps> = ({ data }) => {
     );
   }
 
-  const { query, count, tweets } = parsed;
+  // Defensive defaults
+  const query = parsed.query || '';
+  const count = parsed.count || 0;
+  const tweets = Array.isArray(parsed.tweets) ? parsed.tweets : [];
 
   return (
     <div style={{
@@ -863,111 +866,123 @@ const XFetchRenderer: React.FC<XFetchRendererProps> = ({ data }) => {
             </p>
           </div>
         ) : (
-          tweets.map((tweet, index) => (
-            <div
-              key={tweet.id}
-              style={{
-                background: '#ffffff',
-                border: '2px solid #000000',
-                padding: '12px',
-                marginBottom: index < tweets.length - 1 ? '8px' : 0,
-              }}
-            >
-              {/* Tweet Header */}
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                marginBottom: '8px',
-              }}>
+          tweets.map((tweet, index) => {
+            // Defensive defaults for tweet fields
+            const tweetId = tweet?.id || String(index);
+            const tweetAuthor = tweet?.author || 'Unknown';
+            const tweetUsername = tweet?.username || 'unknown';
+            const tweetText = tweet?.text || '';
+            const tweetCreatedAt = tweet?.createdAt || new Date().toISOString();
+            const tweetLikes = tweet?.likes || 0;
+            const tweetRetweets = tweet?.retweets || 0;
+            const tweetReplies = tweet?.replies || 0;
+
+            return (
+              <div
+                key={tweetId}
+                style={{
+                  background: '#ffffff',
+                  border: '2px solid #000000',
+                  padding: '12px',
+                  marginBottom: index < tweets.length - 1 ? '8px' : 0,
+                }}
+              >
+                {/* Tweet Header */}
                 <div style={{
-                  width: '28px',
-                  height: '28px',
-                  background: '#000000',
-                  color: '#ffffff',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  flexShrink: 0,
+                  gap: '8px',
+                  marginBottom: '8px',
                 }}>
-                  {tweet.author.charAt(0).toUpperCase()}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{
-                    color: '#000000',
-                    fontSize: '11px',
+                  <div style={{
+                    width: '28px',
+                    height: '28px',
+                    background: '#000000',
+                    color: '#ffffff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '12px',
                     fontWeight: 700,
-                    margin: 0,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    textTransform: 'uppercase',
+                    flexShrink: 0,
                   }}>
-                    {tweet.author}
-                  </p>
-                  <p style={{
+                    {tweetAuthor.charAt(0).toUpperCase()}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{
+                      color: '#000000',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      margin: 0,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      textTransform: 'uppercase',
+                    }}>
+                      {tweetAuthor}
+                    </p>
+                    <p style={{
+                      color: '#666666',
+                      fontSize: '9px',
+                      margin: 0,
+                      fontWeight: 600,
+                    }}>
+                      @{tweetUsername}
+                    </p>
+                  </div>
+                  <span style={{
                     color: '#666666',
                     fontSize: '9px',
-                    margin: 0,
-                    fontWeight: 600,
+                    fontWeight: 700,
+                    flexShrink: 0,
                   }}>
-                    @{tweet.username}
-                  </p>
+                    {formatTimeAgo(tweetCreatedAt)}
+                  </span>
                 </div>
-                <span style={{
-                  color: '#666666',
-                  fontSize: '9px',
-                  fontWeight: 700,
-                  flexShrink: 0,
-                }}>
-                  {formatTimeAgo(tweet.createdAt)}
-                </span>
-              </div>
 
-              {/* Tweet Text */}
-              <p style={{
-                color: '#000000',
-                fontSize: '11px',
-                lineHeight: 1.5,
-                margin: '0 0 10px 0',
-                wordBreak: 'break-word',
-              }}>
-                {tweet.text}
-              </p>
+                {/* Tweet Text */}
+                <p style={{
+                  color: '#000000',
+                  fontSize: '11px',
+                  lineHeight: 1.5,
+                  margin: '0 0 10px 0',
+                  wordBreak: 'break-word',
+                }}>
+                  {tweetText}
+                </p>
 
-              {/* Tweet Stats */}
-              <div style={{
-                display: 'flex',
-                gap: '16px',
-                borderTop: '1px solid #e0e0e0',
-                paddingTop: '8px',
-              }}>
-                <span style={{
-                  color: '#666666',
-                  fontSize: '9px',
-                  fontWeight: 700,
+                {/* Tweet Stats */}
+                <div style={{
+                  display: 'flex',
+                  gap: '16px',
+                  borderTop: '1px solid #e0e0e0',
+                  paddingTop: '8px',
                 }}>
-                  ♡ {formatNumber(tweet.likes)}
-                </span>
-                <span style={{
-                  color: '#666666',
-                  fontSize: '9px',
-                  fontWeight: 700,
-                }}>
-                  ↻ {formatNumber(tweet.retweets)}
-                </span>
-                <span style={{
-                  color: '#666666',
-                  fontSize: '9px',
-                  fontWeight: 700,
-                }}>
-                  💬 {formatNumber(tweet.replies)}
-                </span>
+                  <span style={{
+                    color: '#666666',
+                    fontSize: '9px',
+                    fontWeight: 700,
+                  }}>
+                    ♡ {formatNumber(tweetLikes)}
+                  </span>
+                  <span style={{
+                    color: '#666666',
+                    fontSize: '9px',
+                    fontWeight: 700,
+                  }}>
+                    ↻ {formatNumber(tweetRetweets)}
+                  </span>
+                  <span style={{
+                    color: '#666666',
+                    fontSize: '9px',
+                    fontWeight: 700,
+                  }}>
+                    💬 {formatNumber(tweetReplies)}
+                  </span>
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 
@@ -988,6 +1003,340 @@ const XFetchRenderer: React.FC<XFetchRendererProps> = ({ data }) => {
           letterSpacing: '0.5px',
         }}>
           POWERED BY X API
+        </p>
+      </div>
+    </div>
+  );
+};
+
+// ============================================================================
+// X/Twitter DM Renderer Component
+// ============================================================================
+
+interface XDMMessage {
+  id: string;
+  text: string;
+  isOutgoing: boolean;
+  timestamp: string;
+  status?: 'sending' | 'sent' | 'delivered' | 'read';
+}
+
+interface XDMData {
+  recipientName: string;
+  recipientUsername: string;
+  recipientAvatar?: string;
+  messages: XDMMessage[];
+  sentAt: string;
+}
+
+interface XDMRendererProps {
+  data: string;
+}
+
+const XDMRenderer: React.FC<XDMRendererProps> = ({ data }) => {
+  let parsed: XDMData;
+
+  try {
+    parsed = JSON.parse(data);
+  } catch {
+    return (
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100%',
+        padding: '20px',
+      }}>
+        <p style={{
+          color: '#000000',
+          textAlign: 'center',
+          fontWeight: 700,
+          textTransform: 'uppercase',
+        }}>
+          FAILED TO PARSE
+        </p>
+      </div>
+    );
+  }
+
+  const { recipientName, recipientUsername, messages } = parsed;
+
+  const getStatusIcon = (status?: string) => {
+    switch (status) {
+      case 'sending':
+        return '○';
+      case 'sent':
+        return '✓';
+      case 'delivered':
+        return '✓✓';
+      case 'read':
+        return '✓✓';
+      default:
+        return '✓';
+    }
+  };
+
+  return (
+    <div style={{
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      overflow: 'hidden',
+      background: '#ffffff',
+    }}>
+      {/* DM Header */}
+      <div style={{
+        background: '#000000',
+        padding: '12px 16px',
+        flexShrink: 0,
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+      }}>
+        {/* Back Arrow */}
+        <div style={{
+          color: '#ffffff',
+          fontSize: '16px',
+          fontWeight: 700,
+        }}>
+          ←
+        </div>
+
+        {/* Avatar */}
+        <div style={{
+          width: '36px',
+          height: '36px',
+          background: '#ffffff',
+          color: '#000000',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '14px',
+          fontWeight: 700,
+          flexShrink: 0,
+        }}>
+          {recipientName.charAt(0).toUpperCase()}
+        </div>
+
+        {/* Name & Username */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{
+            color: '#ffffff',
+            fontSize: '13px',
+            fontWeight: 700,
+            margin: 0,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}>
+            {recipientName}
+          </p>
+          <p style={{
+            color: 'rgba(255,255,255,0.6)',
+            fontSize: '10px',
+            margin: 0,
+            fontWeight: 600,
+          }}>
+            @{recipientUsername}
+          </p>
+        </div>
+
+        {/* Info Icon */}
+        <div style={{
+          color: '#ffffff',
+          fontSize: '14px',
+          fontWeight: 700,
+        }}>
+          ⓘ
+        </div>
+      </div>
+
+      {/* Messages Container */}
+      <div style={{
+        flex: 1,
+        overflowY: 'auto',
+        padding: '16px 12px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px',
+      }}>
+        {messages.length === 0 ? (
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '100%',
+            gap: '8px',
+          }}>
+            <div style={{
+              width: '48px',
+              height: '48px',
+              background: '#000000',
+              color: '#ffffff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '20px',
+              fontWeight: 700,
+            }}>
+              {recipientName.charAt(0).toUpperCase()}
+            </div>
+            <p style={{
+              color: '#000000',
+              fontSize: '14px',
+              fontWeight: 700,
+              margin: 0,
+            }}>
+              {recipientName}
+            </p>
+            <p style={{
+              color: '#666666',
+              fontSize: '11px',
+              margin: 0,
+            }}>
+              @{recipientUsername}
+            </p>
+            <p style={{
+              color: '#999999',
+              fontSize: '10px',
+              margin: '8px 0 0 0',
+              textTransform: 'uppercase',
+              fontWeight: 600,
+            }}>
+              START A NEW CONVERSATION
+            </p>
+          </div>
+        ) : (
+          messages.map((message) => (
+            <div
+              key={message.id}
+              style={{
+                display: 'flex',
+                justifyContent: message.isOutgoing ? 'flex-end' : 'flex-start',
+              }}
+            >
+              <div style={{
+                maxWidth: '80%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: message.isOutgoing ? 'flex-end' : 'flex-start',
+              }}>
+                <div style={{
+                  background: message.isOutgoing ? '#000000' : '#f0f0f0',
+                  color: message.isOutgoing ? '#ffffff' : '#000000',
+                  padding: '10px 14px',
+                  fontSize: '13px',
+                  lineHeight: 1.4,
+                  wordBreak: 'break-word',
+                  border: '2px solid #000000',
+                }}>
+                  {message.text}
+                </div>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  marginTop: '4px',
+                }}>
+                  <span style={{
+                    color: '#999999',
+                    fontSize: '9px',
+                    fontWeight: 600,
+                  }}>
+                    {message.timestamp}
+                  </span>
+                  {message.isOutgoing && (
+                    <span style={{
+                      color: message.status === 'read' ? '#1DA1F2' : '#999999',
+                      fontSize: '9px',
+                      fontWeight: 700,
+                    }}>
+                      {getStatusIcon(message.status)}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Message Input Area */}
+      <div style={{
+        padding: '12px',
+        borderTop: '2px solid #000000',
+        background: '#ffffff',
+        flexShrink: 0,
+      }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+        }}>
+          {/* Attachment */}
+          <div style={{
+            width: '32px',
+            height: '32px',
+            background: '#ffffff',
+            border: '2px solid #000000',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '14px',
+            color: '#000000',
+            flexShrink: 0,
+          }}>
+            📷
+          </div>
+
+          {/* Input Field */}
+          <div style={{
+            flex: 1,
+            background: '#f5f5f5',
+            border: '2px solid #000000',
+            padding: '8px 12px',
+            fontSize: '12px',
+            color: '#999999',
+          }}>
+            Start a new message
+          </div>
+
+          {/* Send Button */}
+          <div style={{
+            width: '32px',
+            height: '32px',
+            background: '#000000',
+            border: '2px solid #000000',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '12px',
+            color: '#ffffff',
+            flexShrink: 0,
+          }}>
+            ➤
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div style={{
+        padding: '8px 16px',
+        borderTop: '1px solid #e0e0e0',
+        background: '#ffffff',
+        flexShrink: 0,
+      }}>
+        <p style={{
+          color: '#666666',
+          fontSize: '9px',
+          textAlign: 'center',
+          margin: 0,
+          fontWeight: 700,
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px',
+        }}>
+          SIMULATED X DM
         </p>
       </div>
     </div>
@@ -1277,6 +1626,7 @@ const PhoneNode: React.FC<NodeProps> = ({ id, data }) => {
                      nodeData.contentType === 'webSearch' ? 'SEARCHING WEB...' :
                      nodeData.contentType === 'reasoning' ? 'RESEARCHING...' :
                      nodeData.contentType === 'xFetch' ? 'SEARCHING X...' :
+                     nodeData.contentType === 'xDM' ? 'SENDING DM...' :
                      'LOADING...'}
                   </span>
                 </div>
@@ -1304,6 +1654,10 @@ const PhoneNode: React.FC<NodeProps> = ({ id, data }) => {
               ) : nodeData.contentType === 'xFetch' && nodeData.content ? (
                 <div className="h-full">
                   <XFetchRenderer data={nodeData.content} />
+                </div>
+              ) : nodeData.contentType === 'xDM' && nodeData.content ? (
+                <div className="h-full">
+                  <XDMRenderer data={nodeData.content} />
                 </div>
               ) : nodeData.contentType === 'code' && nodeData.content ? (
                 <div className="h-full">

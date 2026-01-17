@@ -10,6 +10,7 @@ import type {
   TextCompletionBlock,
   PhoneBlock,
   XFetchBlock,
+  XDMBlock,
   NodeExecutionState,
   NodeExecutionStatus,
 } from '../types/canvas';
@@ -24,6 +25,8 @@ const blockSizes: Record<string, { width: number; height: number }> = {
   phone: { width: 304, height: 580 },
   // X Fetch node - full size
   xFetch: { width: 380, height: 520 },
+  // X DM node - for simulating DMs
+  xDM: { width: 320, height: 420 },
   // Icon nodes - small size
   reasoning: { width: 80, height: 80 },
   webSearch: { width: 80, height: 80 },
@@ -148,6 +151,15 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
           includeReplies: false,
           query: '',
         } as XFetchBlock;
+        break;
+
+      case 'xDM':
+        newBlock = {
+          ...baseBlock,
+          type: 'xDM',
+          recipientName: '',
+          recipientUsername: '',
+        } as XDMBlock;
         break;
 
       case 'codeExecution':

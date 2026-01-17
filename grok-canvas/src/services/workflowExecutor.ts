@@ -37,6 +37,7 @@ const PROCESSING_NODE_TYPES: NodeType[] = [
   'reasoning',
   'webSearch',
   'xFetch',
+  'xDM',
 ];
 
 // Output node types
@@ -130,7 +131,7 @@ export function getWorkflowType(
   sourceId: string,
   blocks: GrokBlock[],
   connections: Connection[]
-): { hasWorkflow: boolean; processingType: NodeType | null; targetId: string | null } {
+): { hasWorkflow: boolean; processingType: NodeType | null; targetId: string | null; processingNode: GrokBlock | null } {
   console.log('[getWorkflowType] Checking workflow for source:', sourceId);
   console.log('[getWorkflowType] Total blocks:', blocks.length, 'Total connections:', connections.length);
 
@@ -144,13 +145,14 @@ export function getWorkflowType(
 
   if (!path.targetNode || path.targetNode.type !== 'phone') {
     console.log('[getWorkflowType] No phone target found');
-    return { hasWorkflow: false, processingType: null, targetId: null };
+    return { hasWorkflow: false, processingType: null, targetId: null, processingNode: null };
   }
 
-  // Get the first processing node type (determines the workflow type)
-  const processingType = path.processingNodes.length > 0
-    ? path.processingNodes[0].type
+  // Get the first processing node (determines the workflow type)
+  const processingNode = path.processingNodes.length > 0
+    ? path.processingNodes[0]
     : null;
+  const processingType = processingNode?.type || null;
 
   console.log('[getWorkflowType] Workflow detected:', { processingType, targetId: path.targetNode.id });
 
@@ -158,6 +160,7 @@ export function getWorkflowType(
     hasWorkflow: true,
     processingType,
     targetId: path.targetNode.id,
+    processingNode,
   };
 }
 
@@ -732,15 +735,64 @@ async function executeXFetchWorkflow(userMessage: string): Promise<WorkflowResul
 }
 
 /**
+ * Execute an X/Twitter DM simulation workflow
+ * Chat message → Simulate DM conversation → Return DM UI for Phone rendering
+ */
+async function executeXDMWorkflow(
+  userMessage: string,
+  recipientName: string = 'User',
+  recipientUsername: string = 'user'
+): Promise<WorkflowResult> {
+  try {
+    console.log('[WorkflowExecutor] Starting X DM simulation for:', userMessage);
+    console.log('[WorkflowExecutor] Recipient:', recipientName, '@' + recipientUsername);
+
+    // Create simulated DM conversation
+    const now = new Date();
+    const messages = [
+      {
+        id: 'dm-' + Date.now(),
+        text: userMessage,
+        isOutgoing: true,
+        timestamp: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        status: 'delivered' as const,
+      },
+    ];
+
+    // Return structured data for the Phone to render
+    return {
+      success: true,
+      contentType: 'xDM',
+      content: JSON.stringify({
+        recipientName,
+        recipientUsername,
+        messages,
+        sentAt: now.toISOString(),
+      }),
+    };
+  } catch (error) {
+    console.error('[WorkflowExecutor] X DM simulation error:', error);
+    return {
+      success: false,
+      contentType: 'xDM',
+      content: '',
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+}
+
+/**
  * Main workflow executor
  * Determines the workflow type and executes the appropriate pipeline
  */
 export async function executeWorkflow(
   userMessage: string,
-  processingType: NodeType | null
+  processingType: NodeType | null,
+  processingNode?: GrokBlock | null
 ): Promise<WorkflowResult> {
   console.log('[executeWorkflow] Executing workflow with processingType:', processingType);
   console.log('[executeWorkflow] User message:', userMessage);
+  console.log('[executeWorkflow] Processing node:', processingNode);
 
   switch (processingType) {
     case 'codeExecution':
@@ -771,6 +823,17 @@ export async function executeWorkflow(
       // X/Twitter search workflow
       console.log('[executeWorkflow] Routing to X FETCH workflow');
       return executeXFetchWorkflow(userMessage);
+
+    case 'xDM':
+      // X/Twitter DM simulation workflow
+      console.log('[executeWorkflow] Routing to X DM workflow');
+      // Extract recipient info from the XDM processing node
+      const xdmNode = processingNode as { recipientName?: string; recipientUsername?: string } | null;
+      return executeXDMWorkflow(
+        userMessage,
+        xdmNode?.recipientName || 'User',
+        xdmNode?.recipientUsername || 'user'
+      );
 
     default:
       console.log('[executeWorkflow] Unknown processingType, returning default');

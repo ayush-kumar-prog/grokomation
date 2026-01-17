@@ -110,6 +110,14 @@ export interface CodeExecutionBlock extends BaseNode {
   type: 'codeExecution';
 }
 
+// X DM block for simulating Twitter DMs
+export interface XDMBlock extends BaseNode {
+  type: 'xDM';
+  recipientName: string;
+  recipientUsername: string;
+  recipientAvatar?: string;
+}
+
 // ============ OUTPUT BLOCKS ============
 
 // Icon-only output block
@@ -145,6 +153,7 @@ export type GrokBlock =
   | ReasoningBlock
   | WebSearchBlock
   | XFetchBlock
+  | XDMBlock
   | CodeExecutionBlock
   | OutputBlock
   | PhoneBlock;
@@ -159,6 +168,7 @@ export type ToolType =
   | 'reasoning'
   | 'webSearch'
   | 'xFetch'
+  | 'xDM'
   | 'codeExecution'
   | 'output'
   | 'phone';
