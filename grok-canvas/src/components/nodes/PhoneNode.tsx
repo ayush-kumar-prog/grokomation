@@ -548,29 +548,201 @@ const WebSearchRenderer: React.FC<WebSearchRendererProps> = ({ data }) => {
 };
 
 // ============================================================================
+// Reasoning/Deep Research Renderer Component
+// ============================================================================
+
+interface ReasoningData {
+  query: string;
+  answer: string;
+  reasoningTokens?: number;
+  model: string;
+}
+
+interface ReasoningRendererProps {
+  data: string;
+}
+
+const ReasoningRenderer: React.FC<ReasoningRendererProps> = ({ data }) => {
+  let parsed: ReasoningData;
+
+  try {
+    parsed = JSON.parse(data);
+  } catch {
+    return (
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100%',
+        padding: '20px',
+      }}>
+        <p style={{ color: '#ef4444', textAlign: 'center' }}>Failed to parse research results</p>
+      </div>
+    );
+  }
+
+  const { query, answer, reasoningTokens } = parsed;
+
+  return (
+    <div style={{
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      overflow: 'hidden',
+      background: '#f8fafc',
+    }}>
+      {/* Header */}
+      <div style={{
+        background: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)',
+        padding: '14px 18px',
+        flexShrink: 0,
+      }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          marginBottom: '6px',
+        }}>
+          <div style={{
+            width: '26px',
+            height: '26px',
+            borderRadius: '8px',
+            background: 'rgba(255,255,255,0.2)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '12px',
+          }}>
+            🧠
+          </div>
+          <span style={{
+            color: '#ffffff',
+            fontSize: '12px',
+            fontWeight: '500',
+            opacity: 0.9,
+          }}>
+            Deep Research
+          </span>
+          {reasoningTokens && (
+            <div style={{
+              marginLeft: 'auto',
+              background: 'rgba(255,255,255,0.2)',
+              borderRadius: '10px',
+              padding: '2px 8px',
+              fontSize: '10px',
+              color: '#ffffff',
+              fontWeight: '500',
+            }}>
+              {reasoningTokens.toLocaleString()} tokens
+            </div>
+          )}
+        </div>
+        <p style={{
+          color: '#ffffff',
+          fontSize: '14px',
+          fontWeight: '600',
+          margin: 0,
+          lineHeight: 1.4,
+        }}>
+          {query}
+        </p>
+      </div>
+
+      {/* Results Content */}
+      <div style={{
+        flex: 1,
+        overflowY: 'auto',
+        padding: '14px 16px',
+      }}>
+        {/* Analysis Section */}
+        <div style={{
+          background: '#ffffff',
+          borderRadius: '12px',
+          padding: '14px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            marginBottom: '12px',
+          }}>
+            <div style={{
+              width: '8px',
+              height: '8px',
+              borderRadius: '50%',
+              background: '#8b5cf6',
+            }} />
+            <span style={{
+              color: '#0f172a',
+              fontSize: '14px',
+              fontWeight: '600',
+            }}>
+              Analysis
+            </span>
+          </div>
+          <div>
+            {parseMarkdown(answer)}
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div style={{
+        padding: '10px 16px',
+        borderTop: '1px solid #e2e8f0',
+        background: '#ffffff',
+        flexShrink: 0,
+      }}>
+        <p style={{
+          color: '#94a3b8',
+          fontSize: '10px',
+          textAlign: 'center',
+          margin: 0,
+        }}>
+          Powered by Grok Deep Research
+        </p>
+      </div>
+    </div>
+  );
+};
+
+// ============================================================================
 // Default Content Component
 // ============================================================================
 
 const DefaultContent: React.FC = () => (
-  <div
-    style={{
-      width: '100%',
-      height: '100%',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-    }}
-  >
-    <img
-      src="/images/default-phone-bg.png"
-      alt="Grok Flow"
+  <>
+    <div
       style={{
-        width: '100%',
-        height: '100%',
-        objectFit: 'cover',
+        color: '#4CAF50',
+        fontSize: '48px',
+        fontWeight: 'bold',
+        marginBottom: '8px',
+        fontFamily: 'system-ui, -apple-system, sans-serif',
       }}
-    />
-  </div>
+    >
+      0
+    </div>
+    <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '24px' }}>
+      Tap the button to start!
+    </p>
+    <button
+      style={{
+        background: '#4CAF50',
+        color: 'white',
+        fontWeight: 'bold',
+        fontSize: '14px',
+        padding: '12px 24px',
+        borderRadius: '9999px',
+        border: 'none',
+        cursor: 'pointer',
+        boxShadow: '0 8px 20px -4px rgba(76, 175, 80, 0.5)',
+      }}
+    >
+      TAP ME
+    </button>
+  </>
 );
 
 const PhoneNode: React.FC<NodeProps> = ({ id, data }) => {
@@ -708,10 +880,10 @@ const PhoneNode: React.FC<NodeProps> = ({ id, data }) => {
 
             {/* App Content Area */}
             <div
-              className="flex-1 overflow-hidden"
+              className="flex-1 overflow-auto"
               style={{
                 background: nodeData.contentType === 'default'
-                  ? '#000'
+                  ? 'linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%)'
                   : '#f8fafc'
               }}
             >
@@ -722,6 +894,7 @@ const PhoneNode: React.FC<NodeProps> = ({ id, data }) => {
                     {nodeData.contentType === 'code' ? 'Generating app...' :
                      nodeData.contentType === 'image' ? 'Creating image...' :
                      nodeData.contentType === 'webSearch' ? 'Searching the web...' :
+                     nodeData.contentType === 'reasoning' ? 'Researching deeply...' :
                      'Loading...'}
                   </span>
                 </div>
@@ -734,6 +907,10 @@ const PhoneNode: React.FC<NodeProps> = ({ id, data }) => {
                 <div className="h-full">
                   <WebSearchRenderer data={nodeData.content} />
                 </div>
+              ) : nodeData.contentType === 'reasoning' && nodeData.content ? (
+                <div className="h-full">
+                  <ReasoningRenderer data={nodeData.content} />
+                </div>
               ) : nodeData.contentType === 'code' && nodeData.content ? (
                 <div className="h-full">
                   <CodeRenderer code={nodeData.content} />
@@ -741,7 +918,7 @@ const PhoneNode: React.FC<NodeProps> = ({ id, data }) => {
               ) : nodeData.contentType === 'image' && nodeData.content ? (
                 <ImageRenderer imageUrl={nodeData.content} />
               ) : (
-                <div className="h-full w-full">
+                <div className="h-full flex flex-col items-center justify-center px-6">
                   <DefaultContent />
                 </div>
               )}
