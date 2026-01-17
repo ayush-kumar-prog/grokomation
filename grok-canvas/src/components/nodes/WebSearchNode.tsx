@@ -3,6 +3,9 @@ import { type NodeProps } from '@xyflow/react';
 import { Globe, Plus, X } from 'lucide-react';
 import BaseNode from './BaseNode';
 import { useCanvasStore } from '../../stores/canvasStore';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import { cn } from '@/lib/utils';
 import type { WebSearchBlock } from '../../types/canvas';
 
 const WebSearchNode: React.FC<NodeProps> = ({ id, data }) => {
@@ -16,12 +19,12 @@ const WebSearchNode: React.FC<NodeProps> = ({ id, data }) => {
     if (filterMode === 'allowed') {
       updateBlock(id, {
         allowedDomains: [...nodeData.allowedDomains, newDomain.trim()],
-        excludedDomains: []
+        excludedDomains: [],
       });
     } else {
       updateBlock(id, {
         excludedDomains: [...nodeData.excludedDomains, newDomain.trim()],
-        allowedDomains: []
+        allowedDomains: [],
       });
     }
     setNewDomain('');
@@ -29,9 +32,9 @@ const WebSearchNode: React.FC<NodeProps> = ({ id, data }) => {
 
   const removeDomain = (domain: string, type: 'allowed' | 'excluded') => {
     if (type === 'allowed') {
-      updateBlock(id, { allowedDomains: nodeData.allowedDomains.filter(d => d !== domain) });
+      updateBlock(id, { allowedDomains: nodeData.allowedDomains.filter((d) => d !== domain) });
     } else {
-      updateBlock(id, { excludedDomains: nodeData.excludedDomains.filter(d => d !== domain) });
+      updateBlock(id, { excludedDomains: nodeData.excludedDomains.filter((d) => d !== domain) });
     }
   };
 
@@ -45,32 +48,34 @@ const WebSearchNode: React.FC<NodeProps> = ({ id, data }) => {
       color="#3b82f6"
       width={nodeData.size.width}
     >
-      <div className="space-y-5">
-        <div className="flex items-center gap-3 bg-gray-900/60 rounded-xl px-4 py-3 border border-gray-700/50">
-          <div className="w-2.5 h-2.5 bg-blue-500 rounded-full" />
+      <div className="space-y-3">
+        <div className="flex items-center gap-2.5 bg-[#0f1318] rounded-lg px-3 py-2.5 border border-[#2a3441]">
+          <div className="w-2 h-2 bg-blue-500 rounded-full" />
           <span className="text-[13px] text-gray-300 font-medium">grok-4-1-fast (Agentic)</span>
         </div>
 
         <div>
-          <label className="text-[13px] text-gray-400 mb-3 block font-medium tracking-wide">Domain Filter</label>
-          <div className="flex gap-2">
+          <Label>Domain Filter</Label>
+          <div className="flex gap-2 mt-1">
             <button
               onClick={() => setFilterMode('allowed')}
-              className={`flex-1 py-2.5 px-4 text-[13px] font-semibold rounded-xl transition-all duration-200 ${
+              className={cn(
+                'flex-1 py-2 px-3 text-[13px] font-medium rounded-lg transition-colors',
                 filterMode === 'allowed'
-                  ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/25'
-                  : 'bg-gray-900/60 text-gray-400 hover:text-white hover:bg-gray-800/80 border border-gray-700/50'
-              }`}
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-[#0f1318] text-gray-400 hover:text-white border border-[#2a3441]'
+              )}
             >
               Allow Only
             </button>
             <button
               onClick={() => setFilterMode('excluded')}
-              className={`flex-1 py-2.5 px-4 text-[13px] font-semibold rounded-xl transition-all duration-200 ${
+              className={cn(
+                'flex-1 py-2 px-3 text-[13px] font-medium rounded-lg transition-colors',
                 filterMode === 'excluded'
-                  ? 'bg-red-500 text-white shadow-lg shadow-red-500/25'
-                  : 'bg-gray-900/60 text-gray-400 hover:text-white hover:bg-gray-800/80 border border-gray-700/50'
-              }`}
+                  ? 'bg-red-500 text-white'
+                  : 'bg-[#0f1318] text-gray-400 hover:text-white border border-[#2a3441]'
+              )}
             >
               Exclude
             </button>
@@ -78,45 +83,51 @@ const WebSearchNode: React.FC<NodeProps> = ({ id, data }) => {
         </div>
 
         <div className="flex gap-2">
-          <input
-            type="text"
+          <Input
             value={newDomain}
             onChange={(e) => setNewDomain(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && addDomain()}
-            className="flex-1 bg-gray-900/60 border border-gray-700/50 rounded-xl px-4 py-2.5 text-[14px] text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/50 focus:bg-gray-900/80 transition-all duration-200"
             placeholder="e.g., wikipedia.org"
+            className="flex-1"
           />
           <button
             onClick={addDomain}
-            className="bg-blue-500 hover:bg-blue-600 text-white p-2.5 rounded-xl transition-all duration-200 shadow-lg shadow-blue-500/20"
+            className="h-10 w-10 flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
           >
-            <Plus size={18} strokeWidth={2.5} />
+            <Plus size={18} strokeWidth={2} />
           </button>
         </div>
 
         {domains.length > 0 && (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5">
             {domains.map((domain) => (
               <span
                 key={domain}
-                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-[13px] font-medium ${
-                  filterMode === 'allowed' ? 'bg-blue-500/15 text-blue-300' : 'bg-red-500/15 text-red-300'
-                }`}
+                className={cn(
+                  'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[12px] font-medium',
+                  filterMode === 'allowed'
+                    ? 'bg-blue-500/15 text-blue-400'
+                    : 'bg-red-500/15 text-red-400'
+                )}
               >
                 {domain}
-                <button onClick={() => removeDomain(domain, filterMode)} className="hover:opacity-70 transition-opacity">
-                  <X size={14} />
+                <button
+                  onClick={() => removeDomain(domain, filterMode)}
+                  className="hover:opacity-70"
+                >
+                  <X size={12} />
                 </button>
               </span>
             ))}
           </div>
         )}
 
-        <label className="flex items-center gap-3 cursor-pointer bg-gray-900/60 rounded-xl px-4 py-3 border border-gray-700/50 hover:border-gray-600/50 transition-all duration-200">
+        <label className="flex items-center gap-2.5 cursor-pointer bg-[#0f1318] rounded-lg px-3 py-2.5 border border-[#2a3441] hover:border-gray-500 transition-colors">
           <input
             type="checkbox"
             checked={nodeData.enableImageUnderstanding}
             onChange={(e) => updateBlock(id, { enableImageUnderstanding: e.target.checked })}
+            className="w-4 h-4 rounded"
           />
           <span className="text-[13px] text-gray-300 font-medium">Enable Image Understanding</span>
         </label>

@@ -3,6 +3,10 @@ import { type NodeProps } from '@xyflow/react';
 import { MessageSquare } from 'lucide-react';
 import BaseNode from './BaseNode';
 import { useCanvasStore } from '../../stores/canvasStore';
+import { Select } from '../ui/select';
+import { Textarea } from '../ui/textarea';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
 import type { TextCompletionBlock } from '../../types/canvas';
 
 const TextCompletionNode: React.FC<NodeProps> = ({ id, data }) => {
@@ -17,37 +21,35 @@ const TextCompletionNode: React.FC<NodeProps> = ({ id, data }) => {
       color="#10b981"
       width={nodeData.size.width}
     >
-      <div className="space-y-5">
+      <div className="space-y-3">
         <div>
-          <label className="text-[13px] text-gray-400 mb-2.5 block font-medium tracking-wide">Model</label>
-          <select
+          <Label>Model</Label>
+          <Select
             value={nodeData.model}
             onChange={(e) => updateBlock(id, { model: e.target.value as TextCompletionBlock['model'] })}
-            className="w-full bg-gray-900/60 border border-gray-700/50 rounded-xl px-4 py-3 text-[14px] text-white focus:outline-none focus:border-emerald-500/50 focus:bg-gray-900/80 transition-all duration-200 cursor-pointer"
           >
             <option value="grok-4">Grok 4</option>
             <option value="grok-4-fast">Grok 4 Fast</option>
             <option value="grok-3-mini">Grok 3 Mini</option>
-          </select>
+          </Select>
         </div>
 
         <div>
-          <label className="text-[13px] text-gray-400 mb-2.5 block font-medium tracking-wide">System Prompt</label>
-          <textarea
+          <Label>System Prompt</Label>
+          <Textarea
             value={nodeData.systemPrompt}
             onChange={(e) => updateBlock(id, { systemPrompt: e.target.value })}
-            className="w-full bg-gray-900/60 border border-gray-700/50 rounded-xl px-4 py-3 text-[14px] text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500/50 focus:bg-gray-900/80 resize-none transition-all duration-200 leading-relaxed"
             placeholder="You are a helpful assistant..."
             rows={3}
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-[13px] text-gray-400 mb-2.5 block font-medium tracking-wide">
+            <Label className="flex items-center justify-between">
               Temperature
-              <span className="ml-2 text-emerald-400 font-semibold">{nodeData.temperature}</span>
-            </label>
+              <span className="text-emerald-400 font-semibold">{nodeData.temperature}</span>
+            </Label>
             <input
               type="range"
               min="0"
@@ -55,16 +57,15 @@ const TextCompletionNode: React.FC<NodeProps> = ({ id, data }) => {
               step="0.1"
               value={nodeData.temperature}
               onChange={(e) => updateBlock(id, { temperature: parseFloat(e.target.value) })}
-              className="w-full h-2"
+              className="w-full h-1.5 mt-2 rounded-full appearance-none cursor-pointer bg-[#2a3441] [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-emerald-500"
             />
           </div>
           <div>
-            <label className="text-[13px] text-gray-400 mb-2.5 block font-medium tracking-wide">Max Tokens</label>
-            <input
+            <Label>Max Tokens</Label>
+            <Input
               type="number"
               value={nodeData.maxTokens}
               onChange={(e) => updateBlock(id, { maxTokens: parseInt(e.target.value) || 1024 })}
-              className="w-full bg-gray-900/60 border border-gray-700/50 rounded-xl px-4 py-2.5 text-[14px] text-white focus:outline-none focus:border-emerald-500/50 focus:bg-gray-900/80 transition-all duration-200"
             />
           </div>
         </div>

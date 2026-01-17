@@ -3,6 +3,9 @@ import { type NodeProps } from '@xyflow/react';
 import { Type } from 'lucide-react';
 import BaseNode from './BaseNode';
 import { useCanvasStore } from '../../stores/canvasStore';
+import { Input } from '../ui/input';
+import { Textarea } from '../ui/textarea';
+import { Label } from '../ui/label';
 import type { TextInputBlock } from '../../types/canvas';
 
 const TextInputNode: React.FC<NodeProps> = ({ id, data }) => {
@@ -18,23 +21,20 @@ const TextInputNode: React.FC<NodeProps> = ({ id, data }) => {
       hasInput={false}
       width={nodeData.size.width}
     >
-      <div className="space-y-5">
+      <div className="space-y-3">
         <div>
-          <label className="text-[13px] text-gray-400 mb-2.5 block font-medium tracking-wide">Label</label>
-          <input
-            type="text"
+          <Label>Label</Label>
+          <Input
             value={nodeData.label}
             onChange={(e) => updateBlock(id, { label: e.target.value })}
-            className="w-full bg-gray-900/60 border border-gray-700/50 rounded-xl px-4 py-3 text-[14px] text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500/50 focus:bg-gray-900/80 transition-all duration-200"
             placeholder="Enter label..."
           />
         </div>
         <div>
-          <label className="text-[13px] text-gray-400 mb-2.5 block font-medium tracking-wide">Content</label>
-          <textarea
+          <Label>Content</Label>
+          <Textarea
             value={nodeData.value}
             onChange={(e) => updateBlock(id, { value: e.target.value })}
-            className="w-full bg-gray-900/60 border border-gray-700/50 rounded-xl px-4 py-3 text-[14px] text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500/50 focus:bg-gray-900/80 resize-none transition-all duration-200 leading-relaxed"
             placeholder={nodeData.placeholder}
             rows={4}
           />

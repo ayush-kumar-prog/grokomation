@@ -3,6 +3,8 @@ import { type NodeProps } from '@xyflow/react';
 import { ArrowRightFromLine } from 'lucide-react';
 import BaseNode from './BaseNode';
 import { useCanvasStore } from '../../stores/canvasStore';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
 import type { OutputBlock } from '../../types/canvas';
 
 const OutputNode: React.FC<NodeProps> = ({ id, data }) => {
@@ -18,29 +20,29 @@ const OutputNode: React.FC<NodeProps> = ({ id, data }) => {
       hasOutput={false}
       width={nodeData.size.width}
     >
-      <div className="space-y-5">
+      <div className="space-y-3">
         <div>
-          <label className="text-[13px] text-gray-400 mb-2.5 block font-medium tracking-wide">Label</label>
-          <input
-            type="text"
+          <Label>Label</Label>
+          <Input
             value={nodeData.label}
             onChange={(e) => updateBlock(id, { label: e.target.value })}
-            className="w-full bg-gray-900/60 border border-gray-700/50 rounded-xl px-4 py-3 text-[14px] text-white placeholder-gray-600 focus:outline-none focus:border-slate-500/50 focus:bg-gray-900/80 transition-all duration-200"
             placeholder="Output label"
           />
         </div>
 
-        <div className="bg-[#0a0d10] border border-gray-800/60 rounded-xl p-4 min-h-[120px]">
-          <div className="flex items-center gap-2.5 mb-3">
-            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse-soft" />
-            <span className="text-[12px] text-gray-500 font-medium tracking-wide uppercase">Response Preview</span>
+        <div className="bg-[#0f1318] border border-[#2a3441] rounded-lg p-3 min-h-[100px]">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
+            <span className="text-[11px] text-gray-500 font-medium uppercase">
+              Response Preview
+            </span>
           </div>
           {nodeData.outputValue ? (
             <pre className="text-[13px] text-gray-300 whitespace-pre-wrap font-mono leading-relaxed">
               {nodeData.outputValue}
             </pre>
           ) : (
-            <span className="text-[13px] text-gray-600 italic">
+            <span className="text-[12px] text-gray-500 italic">
               Connect to a model block to see output...
             </span>
           )}
