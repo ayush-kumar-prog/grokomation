@@ -2,8 +2,6 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Trash2 } from 'lucide-react';
 import { useCanvasStore } from '../stores/canvasStore';
-import { Button } from './ui/button';
-import { cn } from '@/lib/utils';
 
 const Header: React.FC = () => {
   const clearCanvas = useCanvasStore((s) => s.clearCanvas);
@@ -14,36 +12,68 @@ const Header: React.FC = () => {
     <motion.header
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.4, ease: 'easeOut' }}
-      className="h-14 bg-[#1a1f25]/80 backdrop-blur-xl border-b border-[#2a3441] flex items-center justify-between z-50 relative"
-      style={{ paddingLeft: '24px', paddingRight: '24px' }}
+      transition={{ duration: 0.3, ease: 'easeOut' }}
+      className="flex items-center justify-between z-50 relative"
+      style={{
+        height: '56px',
+        background: '#ffffff',
+        borderBottom: '3px solid #000000',
+        paddingLeft: '24px',
+        paddingRight: '24px',
+      }}
     >
       {/* Logo */}
       <div className="flex items-center gap-4" style={{ marginLeft: '8px' }}>
-        <span className="text-lg font-semibold text-white tracking-tight">Grok Flow</span>
+        <span
+          style={{
+            fontSize: '18px',
+            fontWeight: 900,
+            color: '#000000',
+            textTransform: 'uppercase',
+            letterSpacing: '1px',
+          }}
+        >
+          GROK FLOW
+        </span>
       </div>
 
       {/* Stats */}
       <div className="flex items-center gap-6" style={{ marginRight: '8px' }}>
         <div className="flex items-center gap-6">
-          <StatItem label="Blocks" value={blocks.length} color="primary" />
-          <StatItem label="Connections" value={connections.length} color="success" />
+          <StatItem label="BLOCKS" value={blocks.length} />
+          <StatItem label="CONNECTIONS" value={connections.length} />
         </div>
 
         {/* Divider */}
-        <div className="w-px h-6 bg-[#2a3441]" />
+        <div style={{ width: '2px', height: '24px', background: '#000000' }} />
 
         {/* Actions */}
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
+          <button
             onClick={clearCanvas}
-            className="text-gray-400 hover:text-red-400 hover:bg-red-500/10"
+            className="flex items-center gap-2 transition-colors"
+            style={{
+              padding: '8px 16px',
+              background: '#ffffff',
+              color: '#000000',
+              border: '2px solid #000000',
+              fontSize: '12px',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#000000';
+              e.currentTarget.style.color = '#ffffff';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#ffffff';
+              e.currentTarget.style.color = '#000000';
+            }}
           >
-            <Trash2 size={16} />
-            <span>Clear</span>
-          </Button>
+            <Trash2 size={14} />
+            <span>CLEAR</span>
+          </button>
         </div>
       </div>
     </motion.header>
@@ -53,18 +83,32 @@ const Header: React.FC = () => {
 interface StatItemProps {
   label: string;
   value: number;
-  color: 'primary' | 'success';
 }
 
-const StatItem: React.FC<StatItemProps> = ({ label, value, color }) => (
+const StatItem: React.FC<StatItemProps> = ({ label, value }) => (
   <div className="flex items-center gap-2">
-    <span className="text-sm text-gray-500 font-medium">{label}</span>
-    <div className={cn(
-      'min-w-[28px] text-center px-2 py-0.5 rounded-md text-sm font-semibold',
-      color === 'primary'
-        ? 'bg-blue-500/15 text-blue-400'
-        : 'bg-emerald-500/15 text-emerald-400'
-    )}>
+    <span
+      style={{
+        fontSize: '12px',
+        color: '#666666',
+        fontWeight: 600,
+        textTransform: 'uppercase',
+        letterSpacing: '0.5px',
+      }}
+    >
+      {label}
+    </span>
+    <div
+      style={{
+        minWidth: '28px',
+        textAlign: 'center',
+        padding: '4px 8px',
+        background: '#000000',
+        color: '#ffffff',
+        fontSize: '12px',
+        fontWeight: 700,
+      }}
+    >
       {value}
     </div>
   </div>

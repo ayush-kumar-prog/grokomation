@@ -1,21 +1,20 @@
 import TextInputNode from './TextInputNode';
 import ImageInputNode from './ImageInputNode';
 import TextCompletionNode from './TextCompletionNode';
-import VisionNode from './VisionNode';
-import ReasoningNode from './ReasoningNode';
-import WebSearchNode from './WebSearchNode';
-import XSearchNode from './XSearchNode';
-import CodeExecutionNode from './CodeExecutionNode';
-import OutputNode from './OutputNode';
+import PhoneNode from './PhoneNode';
+import IconNode from './IconNode';
+import XFetchNode from './XFetchNode';
+import XDMNode from './XDMNode';
 
 export const nodeTypes = {
   textInput: TextInputNode,
-  imageInput: ImageInputNode,
+  imageInput: IconNode,
   textCompletion: TextCompletionNode,
-  vision: VisionNode,
-  reasoning: ReasoningNode,
-  webSearch: WebSearchNode,
-  xSearch: XSearchNode,
-  codeExecution: CodeExecutionNode,
-  output: OutputNode,
+  phone: PhoneNode,
+  reasoning: IconNode,
+  webSearch: IconNode,
+  xFetch: XFetchNode,
+  xDM: XDMNode,
+  vision: IconNode,
+  codeExecution: IconNode,
 };

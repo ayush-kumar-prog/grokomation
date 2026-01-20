@@ -1,0 +1,150 @@
+/* Grok Canvas Extension Styles */
+
+/* Floating Action Button */
+#grok-canvas-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 999999;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#grok-canvas-fab:hover {
+  transform: scale(1.05);
+}
+
+#grok-canvas-fab:active {
+  transform: scale(0.95);
+}
+
+.grok-canvas-fab-inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #000000;
+  color: #ffffff;
+  padding: 12px 20px;
+  border: 3px solid #000000;
+  box-shadow: 4px 4px 0 #000000;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.grok-canvas-fab-inner:hover {
+  background: #ffffff;
+  color: #000000;
+}
+
+.grok-canvas-fab-inner svg {
+  flex-shrink: 0;
+}
+
+.grok-canvas-fab-text {
+  white-space: nowrap;
+}
+
+/* Canvas send button near inputs */
+.grok-canvas-send-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #000000;
+  color: #ffffff;
+  padding: 8px 12px;
+  border: 2px solid #000000;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  margin-left: 8px;
+  transition: all 0.15s ease;
+}
+
+.grok-canvas-send-btn:hover {
+  background: #ffffff;
+  color: #000000;
+}
+
+.grok-canvas-send-btn svg {
+  flex-shrink: 0;
+}
+
+/* Indicator on Grok links */
+.grok-canvas-indicator {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 10px;
+  opacity: 0.6;
+  color: #1d9bf0;
+}
+
+/* Input wrapper */
+.grok-canvas-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Override for dark mode */
+@media (prefers-color-scheme: dark) {
+  .grok-canvas-fab-inner {
+    background: #ffffff;
+    color: #000000;
+    border-color: #ffffff;
+    box-shadow: 4px 4px 0 #ffffff;
+  }
+
+  .grok-canvas-fab-inner:hover {
+    background: #000000;
+    color: #ffffff;
+  }
+
+  .grok-canvas-send-btn {
+    background: #ffffff;
+    color: #000000;
+    border-color: #ffffff;
+  }
+
+  .grok-canvas-send-btn:hover {
+    background: #000000;
+    color: #ffffff;
+  }
+}
+
+/* Animation for FAB entrance */
+@keyframes grok-canvas-slide-in {
+  from {
+    transform: translateY(100px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+#grok-canvas-fab {
+  animation: grok-canvas-slide-in 0.3s ease-out;
+}
+
+/* Tooltip styles */
+#grok-canvas-fab[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  margin-bottom: 8px;
+  padding: 8px 12px;
+  background: #000000;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  border: 2px solid #000000;
+}

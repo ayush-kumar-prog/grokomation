@@ -42,49 +42,113 @@ export interface TextCompletionBlock extends BaseNode {
   maxTokens: number;
 }
 
+// Icon-only capability block
 export interface VisionBlock extends BaseNode {
   type: 'vision';
-  model: 'grok-4' | 'grok-4-fast';
-  prompt: string;
-  detail: 'auto' | 'low' | 'high';
 }
 
+// Icon-only reasoning block
 export interface ReasoningBlock extends BaseNode {
   type: 'reasoning';
-  model: 'grok-3-mini';
-  reasoningEffort: 'low' | 'high';
-  systemPrompt: string;
 }
 
 // ============ TOOL BLOCKS ============
 
+// Icon-only web search block
 export interface WebSearchBlock extends BaseNode {
   type: 'webSearch';
-  model: 'grok-4-1-fast';
-  allowedDomains: string[];
-  excludedDomains: string[];
-  enableImageUnderstanding: boolean;
 }
 
-export interface XSearchBlock extends BaseNode {
-  type: 'xSearch';
-  model: 'grok-4-1-fast';
+// X fetch block with full properties
+export interface XFetchBlock extends BaseNode {
+  type: 'xFetch';
+  fetchType: 'search' | 'user_timeline' | 'mentions' | 'trending';
+  count: number;
+  includeReplies: boolean;
+  query?: string;
+  // Monitoring mode
+  monitorMode?: boolean;
+  threshold?: number; // e.g., 300 tweets/hour triggers alert
+  simulateThresholdHit?: boolean; // For demo: pretend threshold was hit
+}
+
+// Node execution status
+export type NodeExecutionStatus = 'idle' | 'running' | 'success' | 'error';
+
+// Execution state for a node
+export interface NodeExecutionState {
+  status: NodeExecutionStatus;
+  output?: unknown;
+  error?: string;
+  startedAt?: number;
+  completedAt?: number;
+}
+
+// Tweet structure from X API
+export interface Tweet {
+  id: string;
+  text: string;
+  author: string;
+  authorUsername: string;
+  createdAt: string;
+  likes: number;
+  retweets: number;
+  replies: number;
+}
+
+// X Node output structure
+export interface XNodeOutput {
+  success: boolean;
   query: string;
-  messages: { role: 'user' | 'assistant'; content: string }[];
+  count: number;
+  tweets: Tweet[];
+  metadata: {
+    searchedAt: string;
+    apiResponseTime: number;
+  };
+  error?: string;
 }
 
+// Icon-only capability block
 export interface CodeExecutionBlock extends BaseNode {
   type: 'codeExecution';
-  model: 'grok-4-1-fast';
-  description: string;
+}
+
+// X DM block for simulating Twitter DMs
+export interface XDMBlock extends BaseNode {
+  type: 'xDM';
+  recipientName: string;
+  recipientUsername: string;
+  recipientAvatar?: string;
+  // Alert mode - auto-generate synopsis from connected tweets
+  alertMode?: boolean;
+  alertTitle?: string; // e.g., "Tesla Alert"
 }
 
 // ============ OUTPUT BLOCKS ============
 
+// Icon-only output block
 export interface OutputBlock extends BaseNode {
   type: 'output';
-  label: string;
-  outputValue: string;
+}
+
+// ============ PHONE BLOCK ============
+
+export type PhoneContentType = 'default' | 'code' | 'image' | 'webSearch' | 'reasoning' | 'xFetch' | 'xDM';
+
+export interface PhoneBlock extends BaseNode {
+  type: 'phone';
+  title: string;
+  isLoading: boolean;
+  showQR: boolean;
+  inspectorMode: boolean;
+  currentVersion: number;
+  totalVersions: number;
+  scrollPosition: number;
+  // Dynamic content from workflow execution
+  contentType: PhoneContentType;
+  content: string; // React code string or image URL
+  error?: string; // Error message if execution failed
 }
 
 // Union type for all blocks
@@ -95,9 +159,11 @@ export type GrokBlock =
   | VisionBlock
   | ReasoningBlock
   | WebSearchBlock
-  | XSearchBlock
+  | XFetchBlock
+  | XDMBlock
   | CodeExecutionBlock
-  | OutputBlock;
+  | OutputBlock
+  | PhoneBlock;
 
 // Tool types for toolbar
 export type ToolType =
@@ -108,9 +174,11 @@ export type ToolType =
   | 'vision'
   | 'reasoning'
   | 'webSearch'
-  | 'xSearch'
+  | 'xFetch'
+  | 'xDM'
   | 'codeExecution'
-  | 'output';
+  | 'output'
+  | 'phone';
 
 // Connection between nodes
 export interface Connection {
