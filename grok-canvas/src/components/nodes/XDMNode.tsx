@@ -1,4 +1,4 @@
-import React, { memo, useState, useCallback, useEffect } from 'react';
+import React, { memo, useState, useCallback, useEffect, useRef } from 'react';
 import { type NodeProps, Handle, Position } from '@xyflow/react';
 import { Send, User, AtSign, Bell, Loader2, Play, X, GripHorizontal, Zap } from 'lucide-react';
 import { useCanvasStore } from '../../stores/canvasStore';
@@ -24,6 +24,8 @@ const XDMNode: React.FC<NodeProps> = ({ id, data }) => {
   const [recipientUsername, setRecipientUsername] = useState(nodeData.recipientUsername || '');
   const [alertTitle, setAlertTitle] = useState(nodeData.alertTitle || 'Alert');
   const [isGenerating, setIsGenerating] = useState(false);
+  const hasTriggeredRef = useRef(false);
+  const handleGenerateAlertRef = useRef<(() => Promise<void>) | null>(null);
 
   const connectedInput = getInputFromConnections(id);
   const hasMessage = connectedInput !== null && connectedInput !== undefined;
@@ -169,14 +171,26 @@ ${synopsis}
     }
   }, [hasXFetchData, isConfigured, xFetchOutput, connectedXFetch, recipientName, recipientUsername, alertTitle, getConnectedPhone, updateBlock]);
 
+  // Keep the ref updated with latest handleGenerateAlert
+  handleGenerateAlertRef.current = handleGenerateAlert;
+
+  // Reset trigger ref when simulate alert is turned off
   useEffect(() => {
-    if (shouldTriggerAlert && hasXFetchData && isConfigured && !isGenerating) {
+    if (!shouldTriggerAlert) {
+      hasTriggeredRef.current = false;
+    }
+  }, [shouldTriggerAlert]);
+
+  // Auto-trigger alert when conditions are met - only fires once per toggle
+  useEffect(() => {
+    if (shouldTriggerAlert && hasXFetchData && isConfigured && !isGenerating && !hasTriggeredRef.current) {
+      hasTriggeredRef.current = true;
       const timer = setTimeout(() => {
-        handleGenerateAlert();
+        handleGenerateAlertRef.current?.();
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [shouldTriggerAlert, hasXFetchData, isConfigured, isGenerating, handleGenerateAlert]);
+  }, [shouldTriggerAlert, hasXFetchData, isConfigured, isGenerating]); // Removed handleGenerateAlert from deps
 
   const getStatusText = () => {
     if (isGenerating) return 'GENERATING...';

@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "Grok Canvas Redirect",
+  "version": "1.0.0",
+  "description": "Redirects Grok queries on X.com to Grok Canvas for visual workflows",
+  "permissions": ["activeTab", "storage"],
+  "host_permissions": ["https://x.com/*", "https://twitter.com/*"],
+  "content_scripts": [
+    {
+      "matches": ["https://x.com/*", "https://twitter.com/*"],
+      "js": ["content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Grok Canvas"
+  }
+}
